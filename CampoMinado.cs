@@ -6,8 +6,22 @@ using System.Threading.Tasks;
 
 class CampoMinado
 {
+    enum Celula
+    {
+        VAZIO,
+        BOMBA
+    }
+
+    struct Campo
+    {
+        uint tamanhoX, tamanhoY;
+
+    }
+
     static void Main(string[] args)
     {
         Console.WriteLine("Hello World!");
     }
+
+    
 }
