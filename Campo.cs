@@ -126,6 +126,8 @@ public class Campo
                 continue;
             for (int y = -1; y <= 1; y++)
             {
+                if (x == 0 && y == 0)
+                    continue;
                 if (celulaY + y < 0 || celulaY + y > 25)
                     continue;
 
