@@ -150,4 +150,17 @@ public class Campo
 
         return vizinhos;
     }
+
+    public void MostrarBombas()
+    {
+        for(uint i=0; i < 26; i++)
+        {
+            for(uint j = 0; j < 26; j++)
+            {
+                if (celulas[i][j].bomba)
+                    celulas[i][j].escondido = false;
+            }
+        }
+        Desenhar();
+    }
 }
