@@ -4,11 +4,18 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+public enum Status
+{
+    JOGANDO,
+    VENCEU,
+    PERDEU
+}
+
 public enum Dificuldade
 {
-    FACIL,
-    NORMAL,
-    DIFICIL
+    FACIL = 0,
+    NORMAL = 1,
+    DIFICIL = 2
 }
 
 struct Celula
@@ -24,6 +31,7 @@ struct Celula
 public class Campo
 {
     Celula[][] celulas;
+    Dificuldade dificuldade;
     
     static readonly Dictionary<string, uint> mapaLetraIndex = new Dictionary<string, uint>
     {
@@ -69,24 +77,44 @@ public class Campo
 
     public Campo(Dificuldade dificuldade = Dificuldade.NORMAL)
     {
+        this.dificuldade = dificuldade;
+
         celulas = new Celula[26][];
         for (uint i = 0; i < 26; i++)
             celulas[i] = new Celula[26];
+    }
+
+    public void Preencher(KeyValuePair<string, uint> posicaoInicial)
+    {
+        uint chance = 1;
+        switch (dificuldade)
+        {
+            case Dificuldade.FACIL:
+                chance = 10;
+                break;
+            case Dificuldade.NORMAL:
+                chance = 6;
+                break;
+            case Dificuldade.DIFICIL:
+                chance = 4;
+                break;
+        }
 
         Random r = new Random(DateTime.Now.Second);
         for (uint i = 0; i < 26; i++)
         {
             for (uint j = 0; j < 26; j++)
             {
-                celulas[i][j] = new Celula(true, r.Next() % 4 == 0);
+                celulas[i][j] = new Celula(true, r.Next() % chance == 0);
             }
-        }   
-
-        switch (dificuldade)
-        {
-            default:
-                return;
         }
+
+        celulas[posicaoInicial.Value-1][mapaLetraIndex[posicaoInicial.Key]].bomba = false;
+
+        Jogar(posicaoInicial);
+        AbrirArea(posicaoInicial.Value - 1, mapaLetraIndex[posicaoInicial.Key], false);
+
+        Desenhar();
     }
 
     public void Desenhar()
@@ -125,22 +153,39 @@ public class Campo
         }
     }
 
-    public void Jogar(KeyValuePair<string, uint> posicao)
+    public Status Jogar(KeyValuePair<string, uint> posicao)
     {
         celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].escondido = false;
 
         if(celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].bomba)
         {
             MostrarBombas();
-            // perdeu
+            return Status.PERDEU;
         }
-        else
+        else if (CalcularVizinhos(posicao.Value - 1, mapaLetraIndex[posicao.Key]) == 0)
         {
             AbrirArea(posicao.Value - 1, mapaLetraIndex[posicao.Key]);
         }
+
+        if (ChecaVitoria())
+            return Status.VENCEU;
+        return Status.JOGANDO;
     }
 
-    void AbrirArea(uint posX, uint posY)
+    bool ChecaVitoria()
+    {
+        for(uint i=0; i < 26; i++)
+        {
+            for(uint j = 0; j < 26; j++)
+            {
+                if (!celulas[i][j].bomba && celulas[i][j].escondido)
+                    return false;
+            }
+        }
+        return true;
+    }
+
+    void AbrirArea(uint posX, uint posY, bool pararNum=true)
     {
         for (int x = -1; x <= 1; x++)
         {
@@ -153,11 +198,11 @@ public class Campo
                 if (posY + y < 0 || posY + y > 25)
                     continue;
 
-                if (!celulas[posX + x][posY + y].escondido)
+                if (!celulas[posX + x][posY + y].escondido || celulas[posX + x][posY + y].bomba)
                     continue;
 
                 celulas[posX + x][posY + y].escondido = false;
-                if (CalcularVizinhos((uint)(posX + x), (uint)(posY + y)) == 0)
+                if (!pararNum || CalcularVizinhos((uint)(posX + x), (uint)(posY + y)) == 0)
                     AbrirArea((uint)(posX + x), (uint)(posY + y));
             }
         }
