@@ -123,9 +123,9 @@ public class Campo
         }
     }
 
-    void Jogar(string coluna, uint linha)
+    public void Jogar(KeyValuePair<string, uint> posicao)
     {
-
+        celulas[posicao.Value-1][mapaLetraIndex[posicao.Key]].escondido = false;
     }
 
     uint CalcularVizinhos(uint celulaX, uint celulaY)
