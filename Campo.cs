@@ -11,10 +11,14 @@ public enum Dificuldade
     DIFICIL
 }
 
-enum Celula
+struct Celula
 {
-    VAZIA,
-    BOMBA
+    public bool escondido, bomba;
+    public Celula(bool escondido, bool bomba)
+    {
+        this.escondido = escondido;
+        this.bomba = bomba;
+    }
 }
 
 public class Campo
@@ -32,8 +36,7 @@ public class Campo
         {
             for (uint j = 0; j < 26; j++)
             {
-                if (r.Next() % 2 == 0)
-                    celulas[i][j] = Celula.BOMBA;
+                celulas[i][j] = new Celula(true, r.Next() % 10 == 0);
             }
         }   
 
@@ -76,7 +79,7 @@ public class Campo
 
     static readonly ConsoleColor[] cores =
     {
-        ConsoleColor.Gray,
+        ConsoleColor.DarkGray,
         ConsoleColor.Green,
         ConsoleColor.DarkGreen,
         ConsoleColor.DarkYellow,
@@ -92,7 +95,7 @@ public class Campo
         Console.Clear();
         Console.ResetColor();
 
-        Console.Write("   A B C D E F G H I J K L M N O P Q R S T U V W X Y Z|\n");
+        Console.Write("   A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\n");
 
         for(uint i = 0; i < 26; i++)
         {
@@ -100,11 +103,20 @@ public class Campo
             Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())} ");
             for(uint j=0; j < 26; j++)
             {
-                Console.ForegroundColor = cores[CalcularVizinhos(i, j)];
-                if (celulas[i][j] == Celula.VAZIA)
-                    Console.Write("# ");
-                else if (celulas[i][j] == Celula.BOMBA)
+                Console.ForegroundColor = cores[0];
+                if (celulas[i][j].escondido)
+                    Console.Write("  ");
+                else if (celulas[i][j].bomba)
                     Console.Write("@ ");
+                else
+                {
+                    uint vizinhos = CalcularVizinhos(i, j);
+                    Console.ForegroundColor = cores[vizinhos];
+
+                    if (vizinhos > 0)
+                        Console.Write($"{vizinhos} ");
+                    else Console.Write("# ");
+                }
                 // Console.Write(celulas[i][j]);
             }
             Console.Write("\n");
@@ -131,7 +143,7 @@ public class Campo
                 if (celulaY + y < 0 || celulaY + y > 25)
                     continue;
 
-                if (celulas[celulaX + x][celulaY + y] != Celula.VAZIA)
+                if (celulas[celulaX + x][celulaY + y].bomba)
                     vizinhos++;
             }
         }
