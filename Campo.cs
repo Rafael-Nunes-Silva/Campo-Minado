@@ -32,7 +32,7 @@ public class Campo
         {
             for (uint j = 0; j < 26; j++)
             {
-                if (r.Next() % 100 == 0)
+                if (r.Next() % 2 == 0)
                     celulas[i][j] = Celula.BOMBA;
             }
         }   
@@ -76,6 +76,7 @@ public class Campo
 
     static readonly ConsoleColor[] cores =
     {
+        ConsoleColor.Gray,
         ConsoleColor.Green,
         ConsoleColor.DarkGreen,
         ConsoleColor.DarkYellow,
@@ -96,12 +97,12 @@ public class Campo
         for(uint i = 0; i < 26; i++)
         {
             Console.ResetColor();
-            Console.Write($"{((i < 9) ? " " + (i+1).ToString() : (i+1).ToString())} ");
+            Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())} ");
             for(uint j=0; j < 26; j++)
             {
-                Console.ForegroundColor = cores[j % 8];
+                Console.ForegroundColor = cores[CalcularVizinhos(i, j)];
                 if (celulas[i][j] == Celula.VAZIA)
-                    Console.Write("  ");
+                    Console.Write("# ");
                 else if (celulas[i][j] == Celula.BOMBA)
                     Console.Write("@ ");
                 // Console.Write(celulas[i][j]);
@@ -113,5 +114,26 @@ public class Campo
     void Jogar(string coluna, uint linha)
     {
 
+    }
+
+    uint CalcularVizinhos(uint celulaX, uint celulaY)
+    {
+        uint vizinhos = 0;
+
+        for (int x = -1; x <= 1; x++)
+        {
+            if (celulaX + x < 0 || celulaX + x > 25)
+                continue;
+            for (int y = -1; y <= 1; y++)
+            {
+                if (celulaY + y < 0 || celulaY + y > 25)
+                    continue;
+
+                if (celulas[celulaX + x][celulaY + y] != Celula.VAZIA)
+                    vizinhos++;
+            }
+        }
+
+        return vizinhos;
     }
 }
