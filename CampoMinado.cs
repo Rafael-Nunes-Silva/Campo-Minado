@@ -12,15 +12,13 @@ class CampoMinado
         BOMBA
     }
 
-    struct Campo
-    {
-        uint tamanhoX, tamanhoY;
-
-    }
-
     static void Main(string[] args)
     {
-        Console.WriteLine("Hello World!");
+        Campo campo = new Campo(Dificuldade.NORMAL);
+
+        campo.Desenhar();
+
+        Console.Read();
     }
 
     
