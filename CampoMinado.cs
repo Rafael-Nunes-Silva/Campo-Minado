@@ -8,6 +8,8 @@ class CampoMinado
 {
     static KeyValuePair<string, uint> PegarInputs()
     {
+        Console.ResetColor();
+
         Console.Write("Insira a coluna: ");
         string coluna = Console.ReadLine().ToUpper();
 
@@ -24,7 +26,6 @@ class CampoMinado
         campo.Desenhar();
         do
         {
-            Console.ResetColor();
             try
             {
                 campo.Jogar(PegarInputs());

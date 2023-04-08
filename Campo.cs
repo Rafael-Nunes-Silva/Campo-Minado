@@ -78,7 +78,7 @@ public class Campo
         {
             for (uint j = 0; j < 26; j++)
             {
-                celulas[i][j] = new Celula(true, r.Next() % 10 == 0);
+                celulas[i][j] = new Celula(true, r.Next() % 4 == 0);
             }
         }   
 
@@ -106,7 +106,10 @@ public class Campo
                 if (celulas[i][j].escondido)
                     Console.Write("  ");
                 else if (celulas[i][j].bomba)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("@ ");
+                }
                 else
                 {
                     uint vizinhos = CalcularVizinhos(i, j);
@@ -124,11 +127,39 @@ public class Campo
 
     public void Jogar(KeyValuePair<string, uint> posicao)
     {
-        Celula cel = celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]];
-        cel.escondido = false;
-        if (cel.bomba)
+        celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].escondido = false;
+
+        if(celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].bomba)
         {
             MostrarBombas();
+            // perdeu
+        }
+        else
+        {
+            AbrirArea(posicao.Value - 1, mapaLetraIndex[posicao.Key]);
+        }
+    }
+
+    void AbrirArea(uint posX, uint posY)
+    {
+        for (int x = -1; x <= 1; x++)
+        {
+            if (posX + x < 0 || posX + x > 25)
+                continue;
+            for (int y = -1; y <= 1; y++)
+            {
+                if (x == 0 && y == 0)
+                    continue;
+                if (posY + y < 0 || posY + y > 25)
+                    continue;
+
+                if (!celulas[posX + x][posY + y].escondido)
+                    continue;
+
+                celulas[posX + x][posY + y].escondido = false;
+                if (CalcularVizinhos((uint)(posX + x), (uint)(posY + y)) == 0)
+                    AbrirArea((uint)(posX + x), (uint)(posY + y));
+            }
         }
     }
 
@@ -155,7 +186,7 @@ public class Campo
         return vizinhos;
     }
 
-    void MostrarBombas()
+    public void MostrarBombas()
     {
         for(uint i=0; i < 26; i++)
         {
