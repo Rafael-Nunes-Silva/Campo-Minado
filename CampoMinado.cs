@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 class CampoMinado
 {
-    static void DesenharMenu()
-    {
-
-    }
-
     static KeyValuePair<string, uint> PegarInputs()
     {
         Console.Write("Insira a coluna: ");

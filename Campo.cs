@@ -24,29 +24,7 @@ struct Celula
 public class Campo
 {
     Celula[][] celulas;
-
-    public Campo(Dificuldade dificuldade = Dificuldade.NORMAL)
-    {
-        celulas = new Celula[26][];
-        for (uint i = 0; i < 26; i++)
-            celulas[i] = new Celula[26];
-
-        Random r = new Random(DateTime.Now.Second);
-        for (uint i = 0; i < 26; i++)
-        {
-            for (uint j = 0; j < 26; j++)
-            {
-                celulas[i][j] = new Celula(true, r.Next() % 10 == 0);
-            }
-        }   
-
-        switch (dificuldade)
-        {
-            default:
-                return;
-        }
-    }
-
+    
     static readonly Dictionary<string, uint> mapaLetraIndex = new Dictionary<string, uint>
     {
         { "A", 0 },
@@ -76,7 +54,6 @@ public class Campo
         { "Y", 24 },
         { "Z", 25 }
     };
-
     static readonly ConsoleColor[] cores =
     {
         ConsoleColor.DarkGray,
@@ -89,6 +66,28 @@ public class Campo
         ConsoleColor.DarkMagenta,
         ConsoleColor.DarkRed
     };
+
+    public Campo(Dificuldade dificuldade = Dificuldade.NORMAL)
+    {
+        celulas = new Celula[26][];
+        for (uint i = 0; i < 26; i++)
+            celulas[i] = new Celula[26];
+
+        Random r = new Random(DateTime.Now.Second);
+        for (uint i = 0; i < 26; i++)
+        {
+            for (uint j = 0; j < 26; j++)
+            {
+                celulas[i][j] = new Celula(true, r.Next() % 10 == 0);
+            }
+        }   
+
+        switch (dificuldade)
+        {
+            default:
+                return;
+        }
+    }
 
     public void Desenhar()
     {
@@ -125,7 +124,12 @@ public class Campo
 
     public void Jogar(KeyValuePair<string, uint> posicao)
     {
-        celulas[posicao.Value-1][mapaLetraIndex[posicao.Key]].escondido = false;
+        Celula cel = celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]];
+        cel.escondido = false;
+        if (cel.bomba)
+        {
+            MostrarBombas();
+        }
     }
 
     uint CalcularVizinhos(uint celulaX, uint celulaY)
@@ -151,7 +155,7 @@ public class Campo
         return vizinhos;
     }
 
-    public void MostrarBombas()
+    void MostrarBombas()
     {
         for(uint i=0; i < 26; i++)
         {
