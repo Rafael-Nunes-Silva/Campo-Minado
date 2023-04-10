@@ -128,16 +128,16 @@ public class Campo
         for(uint i = 0; i < 26; i++)
         {
             Console.ResetColor();
-            Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())} ");
+            Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())}|");
             for(uint j=0; j < 26; j++)
             {
                 Console.ForegroundColor = cores[0];
                 if (celulas[i][j].escondido)
-                    Console.Write(" |");
+                    Console.Write(" ");
                 else if (celulas[i][j].bomba)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Write("@|");
+                    Console.Write("@");
                 }
                 else
                 {
@@ -145,12 +145,14 @@ public class Campo
                     Console.ForegroundColor = cores[vizinhos];
 
                     if (vizinhos > 0)
-                        Console.Write($"{vizinhos} ");
-                    else Console.Write("#|");
+                        Console.Write($"{vizinhos}");
+                    else Console.Write("#");
                 }
+                Console.ResetColor();
+                Console.Write("|");
                 // Console.Write(celulas[i][j]);
             }
-            Console.Write("|\n");
+            Console.Write("\n");
         }
     }
 
