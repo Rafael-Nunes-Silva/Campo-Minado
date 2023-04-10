@@ -11,10 +11,15 @@ class CampoMinado
         Console.ResetColor();
 
         Console.Write("Insira a coluna: ");
-        string coluna = Console.ReadLine().ToUpper();
-        if (int.TryParse(coluna, out int i))
+        string coluna = "";
+        try{
+            coluna = Console.ReadLine().ToUpper();
+        }
+        catch{
             Console.WriteLine("****************************\nCOLUNA PRECISA SER UMA LETRA\n****************************");
-
+            return PegarInputs();
+        }
+        
         Console.Write("Insira a linha: ");
         uint linha = 0;
         try
