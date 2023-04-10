@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+// using System.Linq;
+// using System.Text;
+// using System.Threading.Tasks;
+using System.Text.RegularExpressions;
 
 class CampoMinado
 {
@@ -11,11 +12,8 @@ class CampoMinado
         Console.ResetColor();
 
         Console.Write("Insira a coluna: ");
-        string coluna = "";
-        try{
-            coluna = Console.ReadLine().ToUpper();
-        }
-        catch{
+        string coluna = Console.ReadLine().ToUpper();
+        if (int.TryParse(coluna, out int i) || coluna.Length > 1 || !Regex.IsMatch(coluna, @"^[A-Z]+$")){
             Console.WriteLine("****************************\nCOLUNA PRECISA SER UMA LETRA\n****************************");
             return PegarInputs();
         }
@@ -25,6 +23,11 @@ class CampoMinado
         try
         {
             linha = Convert.ToUInt32(Console.ReadLine());
+            if (linha < 1 || linha > 26)
+            {
+                Console.WriteLine("****************************************\nLINHA PRECISA SER UM NÚMERO ENTRE 1 E 26\n****************************************");
+                return PegarInputs();
+            }
         }
         catch
         {
@@ -32,7 +35,7 @@ class CampoMinado
             return PegarInputs();
         }
 
-        return new KeyValuePair<string, uint>(coluna, linha-1);
+        return new KeyValuePair<string, uint>(coluna, linha - 1);
     }
 
     static void Main(string[] args)
