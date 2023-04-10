@@ -109,10 +109,10 @@ public class Campo
             }
         }
 
-        celulas[posicaoInicial.Value-1][mapaLetraIndex[posicaoInicial.Key]].bomba = false;
+        celulas[posicaoInicial.Value][mapaLetraIndex[posicaoInicial.Key]].bomba = false;
 
         Jogar(posicaoInicial);
-        AbrirArea(posicaoInicial.Value - 1, mapaLetraIndex[posicaoInicial.Key], false);
+        AbrirArea(posicaoInicial.Value, mapaLetraIndex[posicaoInicial.Key], false);
 
         Desenhar();
     }
@@ -156,16 +156,16 @@ public class Campo
 
     public Status Jogar(KeyValuePair<string, uint> posicao)
     {
-        celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].escondido = false;
+        celulas[posicao.Value][mapaLetraIndex[posicao.Key]].escondido = false;
 
-        if(celulas[posicao.Value - 1][mapaLetraIndex[posicao.Key]].bomba)
+        if(celulas[posicao.Value][mapaLetraIndex[posicao.Key]].bomba)
         {
             MostrarBombas();
             return Status.PERDEU;
         }
-        else if (CalcularVizinhos(posicao.Value - 1, mapaLetraIndex[posicao.Key]) == 0)
+        else if (CalcularVizinhos(posicao.Value, mapaLetraIndex[posicao.Key]) == 0)
         {
-            AbrirArea(posicao.Value - 1, mapaLetraIndex[posicao.Key]);
+            AbrirArea(posicao.Value, mapaLetraIndex[posicao.Key]);
         }
 
         if (ChecaVitoria())

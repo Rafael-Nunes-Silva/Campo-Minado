@@ -27,7 +27,7 @@ class CampoMinado
             return PegarInputs();
         }
 
-        return new KeyValuePair<string, uint>(coluna, linha);
+        return new KeyValuePair<string, uint>(coluna, linha-1);
     }
 
     static void Main(string[] args)
