@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 public enum Status
 {
@@ -148,7 +145,7 @@ public class Campo
                         Console.Write($"{vizinhos}");
                     else Console.Write("#");
                 }
-                Console.ResetColor();
+                Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.Write("|");
                 // Console.Write(celulas[i][j]);
             }
