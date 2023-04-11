@@ -39,34 +39,27 @@ class CampoMinado
     static void Main(string[] args)
     {
         Console.Write("Em qual dificuldade deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
-        uint dificuldade = 1;
+        Dificuldade dificuldade = Dificuldade.NORMAL;
         try
         {
-            dificuldade = Convert.ToUInt32(Console.ReadLine());
+            dificuldade = (Dificuldade)Convert.ToInt32(Console.ReadLine());
         }
         catch
         {
             Main(args);
             return;
         }
-        if (dificuldade < 0 || dificuldade > 2)
+        if ((int)dificuldade < 0 || (int)dificuldade > 2)
         {
             Main(args);
             return;
         }
 
-        Campo campo = new Campo((Dificuldade)dificuldade);
+        Campo campo = new Campo(dificuldade);
         campo.Desenhar();
 
         campo.Preencher(PegarInputs());
-
-        Status statusDoJogo = Status.JOGANDO;
-        do
-        {
-            statusDoJogo = campo.Jogar(PegarInputs());
-            
-            campo.Desenhar();
-        } while (statusDoJogo == Status.JOGANDO);
+        Status statusDoJogo = GameLoop(campo);
 
         if (statusDoJogo == Status.VENCEU)
         {
@@ -83,5 +76,17 @@ class CampoMinado
         Console.Write("Quer tentar de novo?(Y/n): ");
         if (Console.ReadLine().ToUpper() == "Y")
             Main(args);
+    }
+
+    static Status GameLoop(Campo campo)
+    {
+        Status statusDoJogo = Status.JOGANDO;
+        do
+        {
+            statusDoJogo = campo.Jogar(PegarInputs());
+
+            campo.Desenhar();
+        } while (statusDoJogo == Status.JOGANDO);
+        return statusDoJogo;
     }
 }
