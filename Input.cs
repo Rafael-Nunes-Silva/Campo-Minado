@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
 
-static class InputHandler
+static public class InputHandler
 {
     static readonly Dictionary<char, uint> letterIndexMap = new Dictionary<char, uint>
     {
@@ -39,8 +39,8 @@ static class InputHandler
 
     public struct GameInput
     {
-        uint column, line;
-        bool flag;
+        public readonly uint column, line;
+        public readonly bool flag;
 
         public GameInput(uint column, uint line, bool flag)
         {
