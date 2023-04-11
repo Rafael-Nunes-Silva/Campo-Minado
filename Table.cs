@@ -29,36 +29,8 @@ public class Table
 {
     Cell[][] cells;
     Difficulty difficulty;
+    public uint numOfColumns = 26, numofLines = 26;
     
-    static readonly Dictionary<string, uint> letterIndexMap = new Dictionary<string, uint>
-    {
-        { "A", 0 },
-        { "B", 1 },
-        { "C", 2 },
-        { "D", 3 },
-        { "E", 4 },
-        { "F", 5 },
-        { "G", 6 },
-        { "H", 7 },
-        { "I", 8 },
-        { "J", 9 },
-        { "K", 10 },
-        { "L", 11 },
-        { "M", 12 },
-        { "N", 13 },
-        { "O", 14 },
-        { "P", 15 },
-        { "Q", 16 },
-        { "R", 17 },
-        { "S", 18 },
-        { "T", 19 },
-        { "U", 20 },
-        { "V", 21 },
-        { "W", 22 },
-        { "X", 23 },
-        { "Y", 24 },
-        { "Z", 25 }
-    };
     static readonly ConsoleColor[] colors =
     {
         ConsoleColor.DarkGray,
@@ -75,10 +47,25 @@ public class Table
     public Table(Difficulty difficulty = Difficulty.NORMAL)
     {
         this.difficulty = difficulty;
+        switch (difficulty)
+        {
+            case Difficulty.FACIL:
+                numOfColumns = 5;
+                numofLines = 5;
+                break;
+            case Difficulty.NORMAL:
+                numOfColumns = 14;
+                numofLines = 14;
+                break;
+            case Difficulty.DIFICIL:
+                numOfColumns = 26;
+                numofLines = 26;
+                break;
+        }
 
-        cells = new Cell[26][];
-        for (uint i = 0; i < 26; i++)
-            cells[i] = new Cell[26];
+        cells = new Cell[numOfColumns][];
+        for (uint i = 0; i < numOfColumns; i++)
+            cells[i] = new Cell[numofLines];
     }
 
     public void PlaceBombs(KeyValuePair<string, uint> posicaoInicial)
@@ -98,9 +85,9 @@ public class Table
         }
 
         Random r = new Random(DateTime.Now.Second);
-        for (uint i = 0; i < 26; i++)
+        for (uint i = 0; i < numOfColumns; i++)
         {
-            for (uint j = 0; j < 26; j++)
+            for (uint j = 0; j < numofLines; j++)
             {
                 cells[i][j] = new Cell(true, r.Next() % chance == 0);
             }

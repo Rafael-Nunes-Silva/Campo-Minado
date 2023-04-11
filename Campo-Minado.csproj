@@ -57,6 +57,7 @@
   <ItemGroup>
     <Compile Include="Campo.cs" />
     <Compile Include="CampoMinado.cs" />
+    <Compile Include="Input.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Icone.ico" />
