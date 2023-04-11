@@ -2,9 +2,9 @@
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-class CampoMinado
+class tableMinado
 {
-    static KeyValuePair<string, uint> PegarInputs()
+    static KeyValuePair<string, uint> GetInputs()
     {
         Console.ResetColor();
 
@@ -13,7 +13,7 @@ class CampoMinado
         
         if (int.TryParse(coluna, out int i) || coluna.Length > 1 || !Regex.IsMatch(coluna, @"^[A-Z]+$")){
             Console.WriteLine("****************************\nCOLUNA PRECISA SER UMA LETRA\n****************************");
-            return PegarInputs();
+            return GetInputs();
         }
         
         Console.Write("Insira a linha: ");
@@ -24,13 +24,13 @@ class CampoMinado
             if (linha < 1 || linha > 26)
             {
                 Console.WriteLine("****************************************\nLINHA PRECISA SER UM NÚMERO ENTRE 1 E 26\n****************************************");
-                return PegarInputs();
+                return GetInputs();
             }
         }
         catch
         {
             Console.WriteLine("****************************************\nLINHA PRECISA SER UM NÚMERO ENTRE 1 E 26\n****************************************");
-            return PegarInputs();
+            return GetInputs();
         }
 
         return new KeyValuePair<string, uint>(coluna, linha - 1);
@@ -38,35 +38,35 @@ class CampoMinado
 
     static void Main(string[] args)
     {
-        Console.Write("Em qual dificuldade deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
-        Dificuldade dificuldade = Dificuldade.NORMAL;
+        Console.Write("Em qual difficulty deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
+        Difficulty difficulty = Difficulty.NORMAL;
         try
         {
-            dificuldade = (Dificuldade)Convert.ToInt32(Console.ReadLine());
+            difficulty = (Difficulty)Convert.ToInt32(Console.ReadLine());
         }
         catch
         {
             Main(args);
             return;
         }
-        if ((int)dificuldade < 0 || (int)dificuldade > 2)
+        if ((int)difficulty < 0 || (int)difficulty > 2)
         {
             Main(args);
             return;
         }
 
-        Campo campo = new Campo(dificuldade);
-        campo.Desenhar();
+        Table table = new Table(difficulty);
+        table.Draw();
 
-        campo.Preencher(PegarInputs());
-        Status statusDoJogo = GameLoop(campo);
+        table.PlaceBombs(GetInputs());
+        GameStatus gameStatus = GameLoop(table);
 
-        if (statusDoJogo == Status.VENCEU)
+        if (gameStatus == GameStatus.VENCEU)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Parabens! Você venceu!");
         }
-        else if (statusDoJogo == Status.PERDEU)
+        else if (gameStatus == GameStatus.PERDEU)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Você perdeu :(");
@@ -78,15 +78,15 @@ class CampoMinado
             Main(args);
     }
 
-    static Status GameLoop(Campo campo)
+    static GameStatus GameLoop(Table table)
     {
-        Status statusDoJogo = Status.JOGANDO;
+        GameStatus gameStatus = GameStatus.JOGANDO;
         do
         {
-            statusDoJogo = campo.Jogar(PegarInputs());
+            gameStatus = table.Play(GetInputs());
 
-            campo.Desenhar();
-        } while (statusDoJogo == Status.JOGANDO);
-        return statusDoJogo;
+            table.Draw();
+        } while (gameStatus == GameStatus.JOGANDO);
+        return gameStatus;
     }
 }

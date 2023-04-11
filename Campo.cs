@@ -1,36 +1,36 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public enum Status
+public enum GameStatus
 {
     JOGANDO,
     VENCEU,
     PERDEU
 }
 
-public enum Dificuldade
+public enum Difficulty
 {
     FACIL = 0,
     NORMAL = 1,
     DIFICIL = 2
 }
 
-struct Celula
+struct Cell
 {
-    public bool escondido, bomba;
-    public Celula(bool escondido, bool bomba)
+    public bool hidden, bomb;
+    public Cell(bool hidden, bool bomb)
     {
-        this.escondido = escondido;
-        this.bomba = bomba;
+        this.hidden = hidden;
+        this.bomb = bomb;
     }
 }
 
-public class Campo
+public class Table
 {
-    Celula[][] celulas;
-    Dificuldade dificuldade;
+    Cell[][] cells;
+    Difficulty difficulty;
     
-    static readonly Dictionary<string, uint> mapaLetraIndex = new Dictionary<string, uint>
+    static readonly Dictionary<string, uint> letterIndexMap = new Dictionary<string, uint>
     {
         { "A", 0 },
         { "B", 1 },
@@ -59,7 +59,7 @@ public class Campo
         { "Y", 24 },
         { "Z", 25 }
     };
-    static readonly ConsoleColor[] cores =
+    static readonly ConsoleColor[] colors =
     {
         ConsoleColor.DarkGray,
         ConsoleColor.Green,
@@ -72,27 +72,27 @@ public class Campo
         ConsoleColor.DarkRed
     };
 
-    public Campo(Dificuldade dificuldade = Dificuldade.NORMAL)
+    public Table(Difficulty difficulty = Difficulty.NORMAL)
     {
-        this.dificuldade = dificuldade;
+        this.difficulty = difficulty;
 
-        celulas = new Celula[26][];
+        cells = new Cell[26][];
         for (uint i = 0; i < 26; i++)
-            celulas[i] = new Celula[26];
+            cells[i] = new Cell[26];
     }
 
-    public void Preencher(KeyValuePair<string, uint> posicaoInicial)
+    public void PlaceBombs(KeyValuePair<string, uint> posicaoInicial)
     {
         uint chance = 1;
-        switch (dificuldade)
+        switch (difficulty)
         {
-            case Dificuldade.FACIL:
+            case Difficulty.FACIL:
                 chance = 10;
                 break;
-            case Dificuldade.NORMAL:
+            case Difficulty.NORMAL:
                 chance = 6;
                 break;
-            case Dificuldade.DIFICIL:
+            case Difficulty.DIFICIL:
                 chance = 4;
                 break;
         }
@@ -102,19 +102,19 @@ public class Campo
         {
             for (uint j = 0; j < 26; j++)
             {
-                celulas[i][j] = new Celula(true, r.Next() % chance == 0);
+                cells[i][j] = new Cell(true, r.Next() % chance == 0);
             }
         }
 
-        celulas[posicaoInicial.Value][mapaLetraIndex[posicaoInicial.Key]].bomba = false;
+        cells[posicaoInicial.Value][letterIndexMap[posicaoInicial.Key]].bomb = false;
 
-        Jogar(posicaoInicial);
-        AbrirArea(posicaoInicial.Value, mapaLetraIndex[posicaoInicial.Key], false);
+        Play(posicaoInicial);
+        AbrirArea(posicaoInicial.Value, letterIndexMap[posicaoInicial.Key], false);
 
-        Desenhar();
+        Draw();
     }
 
-    public void Desenhar()
+    public void Draw()
     {
         Console.Clear();
         Console.ResetColor();
@@ -128,10 +128,10 @@ public class Campo
             Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())}|");
             for(uint j=0; j < 26; j++)
             {
-                Console.ForegroundColor = cores[0];
-                if (celulas[i][j].escondido)
+                Console.ForegroundColor = colors[0];
+                if (cells[i][j].hidden)
                     Console.Write(" ");
-                else if (celulas[i][j].bomba)
+                else if (cells[i][j].bomb)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
                     Console.Write("@");
@@ -139,7 +139,7 @@ public class Campo
                 else
                 {
                     uint vizinhos = CalcularVizinhos(i, j);
-                    Console.ForegroundColor = cores[vizinhos];
+                    Console.ForegroundColor = colors[vizinhos];
 
                     if (vizinhos > 0)
                         Console.Write($"{vizinhos}");
@@ -147,29 +147,29 @@ public class Campo
                 }
                 Console.ForegroundColor = ConsoleColor.DarkGray;
                 Console.Write("|");
-                // Console.Write(celulas[i][j]);
+                // Console.Write(cells[i][j]);
             }
             Console.Write("\n");
         }
     }
 
-    public Status Jogar(KeyValuePair<string, uint> posicao)
+    public GameStatus Play(KeyValuePair<string, uint> posicao)
     {
-        celulas[posicao.Value][mapaLetraIndex[posicao.Key]].escondido = false;
+        cells[posicao.Value][letterIndexMap[posicao.Key]].hidden = false;
 
-        if(celulas[posicao.Value][mapaLetraIndex[posicao.Key]].bomba)
+        if(cells[posicao.Value][letterIndexMap[posicao.Key]].bomb)
         {
-            MostrarBombas();
-            return Status.PERDEU;
+            Mostrarbombs();
+            return GameStatus.PERDEU;
         }
-        else if (CalcularVizinhos(posicao.Value, mapaLetraIndex[posicao.Key]) == 0)
+        else if (CalcularVizinhos(posicao.Value, letterIndexMap[posicao.Key]) == 0)
         {
-            AbrirArea(posicao.Value, mapaLetraIndex[posicao.Key]);
+            AbrirArea(posicao.Value, letterIndexMap[posicao.Key]);
         }
 
         if (ChecaVitoria())
-            return Status.VENCEU;
-        return Status.JOGANDO;
+            return GameStatus.VENCEU;
+        return GameStatus.JOGANDO;
     }
 
     bool ChecaVitoria()
@@ -178,7 +178,7 @@ public class Campo
         {
             for(uint j = 0; j < 26; j++)
             {
-                if (!celulas[i][j].bomba && celulas[i][j].escondido)
+                if (!cells[i][j].bomb && cells[i][j].hidden)
                     return false;
             }
         }
@@ -198,32 +198,32 @@ public class Campo
                 if (posY + y < 0 || posY + y > 25)
                     continue;
 
-                if (!celulas[posX + x][posY + y].escondido || celulas[posX + x][posY + y].bomba)
+                if (!cells[posX + x][posY + y].hidden || cells[posX + x][posY + y].bomb)
                     continue;
 
-                celulas[posX + x][posY + y].escondido = false;
+                cells[posX + x][posY + y].hidden = false;
                 if (!pararNum || CalcularVizinhos((uint)(posX + x), (uint)(posY + y)) == 0)
                     AbrirArea((uint)(posX + x), (uint)(posY + y));
             }
         }
     }
 
-    uint CalcularVizinhos(uint celulaX, uint celulaY)
+    uint CalcularVizinhos(uint CellX, uint CellY)
     {
         uint vizinhos = 0;
 
         for (int x = -1; x <= 1; x++)
         {
-            if (celulaX + x < 0 || celulaX + x > 25)
+            if (CellX + x < 0 || CellX + x > 25)
                 continue;
             for (int y = -1; y <= 1; y++)
             {
                 if (x == 0 && y == 0)
                     continue;
-                if (celulaY + y < 0 || celulaY + y > 25)
+                if (CellY + y < 0 || CellY + y > 25)
                     continue;
 
-                if (celulas[celulaX + x][celulaY + y].bomba)
+                if (cells[CellX + x][CellY + y].bomb)
                     vizinhos++;
             }
         }
@@ -231,16 +231,16 @@ public class Campo
         return vizinhos;
     }
 
-    public void MostrarBombas()
+    public void Mostrarbombs()
     {
         for(uint i=0; i < 26; i++)
         {
             for(uint j = 0; j < 26; j++)
             {
-                if (celulas[i][j].bomba)
-                    celulas[i][j].escondido = false;
+                if (cells[i][j].bomb)
+                    cells[i][j].hidden = false;
             }
         }
-        Desenhar();
+        Draw();
     }
 }
