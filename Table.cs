@@ -1,36 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 
-public enum GameStatus
-{
-    JOGANDO,
-    VENCEU,
-    PERDEU
-}
 
-public enum Difficulty
-{
-    FACIL = 0,
-    NORMAL = 1,
-    DIFICIL = 2
-}
-
-struct Cell
-{
-    public bool hidden, bomb;
-    public Cell(bool hidden, bool bomb)
-    {
-        this.hidden = hidden;
-        this.bomb = bomb;
-    }
-}
 
 public class Table
 {
+    public enum GameStatus
+    {
+        JOGANDO,
+        VENCEU,
+        PERDEU
+    }
+
+    public enum Difficulty
+    {
+        FACIL = 0,
+        NORMAL = 1,
+        DIFICIL = 2
+    }
+
+    struct Cell
+    {
+        public bool hidden, bomb;
+        public Cell(bool hidden, bool bomb)
+        {
+            this.hidden = hidden;
+            this.bomb = bomb;
+        }
+    }
+
     Cell[][] cells;
     Difficulty difficulty;
     public uint numOfColumns = 26, numofLines = 26;
-    
+
     static readonly ConsoleColor[] colors =
     {
         ConsoleColor.DarkGray,
@@ -68,7 +70,7 @@ public class Table
             cells[i] = new Cell[numofLines];
     }
 
-    public void PlaceBombs(KeyValuePair<string, uint> posicaoInicial)
+    public void PlaceBombs(InputHandler.GameInput startPos)
     {
         uint chance = 1;
         switch (difficulty)
@@ -93,10 +95,10 @@ public class Table
             }
         }
 
-        cells[posicaoInicial.Value][letterIndexMap[posicaoInicial.Key]].bomb = false;
+        cells[startPos.column][startPos.line].bomb = false;
 
-        Play(posicaoInicial);
-        AbrirArea(posicaoInicial.Value, letterIndexMap[posicaoInicial.Key], false);
+        Play(startPos);
+        OpenArea(startPos.column, startPos.line, false);
 
         Draw();
     }
@@ -109,11 +111,11 @@ public class Table
         // Console.Write("   A B C D E F G H I J K L M N O P Q R S T U V W X Y Z\n");
         Console.Write("   A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|\n");
 
-        for(uint i = 0; i < 26; i++)
+        for (uint i = 0; i < numOfColumns; i++)
         {
             Console.ResetColor();
-            Console.Write($"{((i<9)?" "+(i+1).ToString():(i+1).ToString())}|");
-            for(uint j=0; j < 26; j++)
+            Console.Write($"{((i < 9) ? " " + (i + 1).ToString() : (i + 1).ToString())}|");
+            for (uint j = 0; j < numofLines; j++)
             {
                 Console.ForegroundColor = colors[0];
                 if (cells[i][j].hidden)
@@ -125,7 +127,7 @@ public class Table
                 }
                 else
                 {
-                    uint vizinhos = CalcularVizinhos(i, j);
+                    uint vizinhos = CalcNeighbours(i, j);
                     Console.ForegroundColor = colors[vizinhos];
 
                     if (vizinhos > 0)
@@ -140,30 +142,30 @@ public class Table
         }
     }
 
-    public GameStatus Play(KeyValuePair<string, uint> posicao)
+    public GameStatus Play(InputHandler.GameInput pos)
     {
-        cells[posicao.Value][letterIndexMap[posicao.Key]].hidden = false;
+        cells[pos.column][pos.line].hidden = false;
 
-        if(cells[posicao.Value][letterIndexMap[posicao.Key]].bomb)
+        if (cells[pos.column][pos.line].bomb)
         {
-            Mostrarbombs();
+            ShowBombs();
             return GameStatus.PERDEU;
         }
-        else if (CalcularVizinhos(posicao.Value, letterIndexMap[posicao.Key]) == 0)
+        else if (CalcNeighbours(pos.column, pos.line) == 0)
         {
-            AbrirArea(posicao.Value, letterIndexMap[posicao.Key]);
+            OpenArea(pos.column, pos.line);
         }
 
-        if (ChecaVitoria())
+        if (CheckVictory())
             return GameStatus.VENCEU;
         return GameStatus.JOGANDO;
     }
 
-    bool ChecaVitoria()
+    bool CheckVictory()
     {
-        for(uint i=0; i < 26; i++)
+        for (uint i = 0; i < numOfColumns; i++)
         {
-            for(uint j = 0; j < 26; j++)
+            for (uint j = 0; j < numofLines; j++)
             {
                 if (!cells[i][j].bomb && cells[i][j].hidden)
                     return false;
@@ -172,7 +174,7 @@ public class Table
         return true;
     }
 
-    void AbrirArea(uint posX, uint posY, bool pararNum=true)
+    void OpenArea(uint posX, uint posY, bool pararNum = true)
     {
         for (int x = -1; x <= 1; x++)
         {
@@ -189,13 +191,13 @@ public class Table
                     continue;
 
                 cells[posX + x][posY + y].hidden = false;
-                if (!pararNum || CalcularVizinhos((uint)(posX + x), (uint)(posY + y)) == 0)
-                    AbrirArea((uint)(posX + x), (uint)(posY + y));
+                if (!pararNum || CalcNeighbours((uint)(posX + x), (uint)(posY + y)) == 0)
+                    OpenArea((uint)(posX + x), (uint)(posY + y));
             }
         }
     }
 
-    uint CalcularVizinhos(uint CellX, uint CellY)
+    uint CalcNeighbours(uint CellX, uint CellY)
     {
         uint vizinhos = 0;
 
@@ -218,11 +220,11 @@ public class Table
         return vizinhos;
     }
 
-    public void Mostrarbombs()
+    public void ShowBombs()
     {
-        for(uint i=0; i < 26; i++)
+        for (uint i = 0; i < numOfColumns; i++)
         {
-            for(uint j = 0; j < 26; j++)
+            for (uint j = 0; j < numofLines; j++)
             {
                 if (cells[i][j].bomb)
                     cells[i][j].hidden = false;
