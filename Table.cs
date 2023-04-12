@@ -1,34 +1,33 @@
 ﻿using System;
-using System.Collections.Generic;
 
 public class Table
 {
     public enum GameStatus
     {
-        JOGANDO,
-        VENCEU,
-        PERDEU
+        PLAYING,
+        WON,
+        LOST
     }
 
     public enum Difficulty
     {
-        FACIL = 0,
+        EASY = 0,
         NORMAL = 1,
-        DIFICIL = 2
+        HARD = 2
     }
 
     struct Cell
     {
-        public bool hidden, bomb;
+        public bool hidden, bomb, flag;
         public Cell(bool hidden, bool bomb)
         {
             this.hidden = hidden;
             this.bomb = bomb;
+            this.flag = false;
         }
     }
 
     Cell[][] cells;
-    Difficulty difficulty;
     public int numOfColumns = 26, numOfLines = 26;
 
     bool firstPlay = true;
@@ -48,10 +47,9 @@ public class Table
 
     public Table(Difficulty difficulty = Difficulty.NORMAL)
     {
-        this.difficulty = difficulty;
         switch (difficulty)
         {
-            case Difficulty.FACIL:
+            case Difficulty.EASY:
                 numOfColumns = 5;
                 numOfLines = 5;
                 break;
@@ -59,7 +57,7 @@ public class Table
                 numOfColumns = 14;
                 numOfLines = 14;
                 break;
-            case Difficulty.DIFICIL:
+            case Difficulty.HARD:
                 numOfColumns = 26;
                 numOfLines = 26;
                 break;
@@ -84,8 +82,15 @@ public class Table
             for (int j = 0; j < numOfColumns; j++)
             {
                 Console.ForegroundColor = colors[0];
-                if (cells[i][j].hidden)
+                if (cells[i][j].flag)
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.Write("&");
+                }
+                else if (cells[i][j].hidden)
+                {
                     Console.Write(" ");
+                }
                 else if (cells[i][j].bomb)
                 {
                     Console.ForegroundColor = ConsoleColor.Red;
@@ -109,7 +114,10 @@ public class Table
 
     public GameStatus Play(InputHandler.GameInput[] pos)
     {
-        if (firstPlay && pos.Length > 0)
+        if (pos.Length == 0)
+            return GameStatus.PLAYING;
+
+        if (firstPlay)
         {
             PlaceBombs(pos[0]);
             firstPlay = false;
@@ -117,12 +125,17 @@ public class Table
 
         for (int i = 0; i < pos.Length; i++)
         {
-            cells[pos[i].line][pos[i].column].hidden = false;
+            if (pos[i].flag)
+            {
+                cells[pos[i].line][pos[i].column].flag = !cells[pos[i].line][pos[i].column].flag;
+                continue;
+            }
 
+            cells[pos[i].line][pos[i].column].hidden = false;
             if (cells[pos[i].line][pos[i].column].bomb)
             {
                 ShowBombs();
-                return GameStatus.PERDEU;
+                return GameStatus.LOST;
             }
             else if (CalcNeighbours(pos[i].line, pos[i].column) == 0)
             {
@@ -131,12 +144,17 @@ public class Table
         }
 
         if (CheckVictory())
-            return GameStatus.VENCEU;
-        return GameStatus.JOGANDO;
+        {
+            ShowBombs();
+            return GameStatus.WON;
+        }
+        return GameStatus.PLAYING;
     }
 
     void PlaceBombs(InputHandler.GameInput startPos)
     {
+        cells[startPos.column][startPos.line].bomb = false;
+
         Random r = new Random(DateTime.Now.Second);
         for (int i = 0; i < numOfLines; i++)
         {
@@ -145,8 +163,6 @@ public class Table
                 cells[i][j] = new Cell(true, r.Next() % 4 == 0);
             }
         }
-
-        cells[startPos.column][startPos.line].bomb = false;
 
         OpenArea(startPos.column, startPos.line, false);
 
