@@ -153,8 +153,6 @@ public class Table
 
     void PlaceBombs(InputHandler.GameInput startPos)
     {
-        cells[startPos.column][startPos.line].bomb = false;
-
         Random r = new Random(DateTime.Now.Second);
         for (int i = 0; i < numOfLines; i++)
         {
@@ -163,6 +161,8 @@ public class Table
                 cells[i][j] = new Cell(true, r.Next() % 4 == 0);
             }
         }
+
+        cells[startPos.column][startPos.line].bomb = false;
 
         OpenArea(startPos.column, startPos.line, false);
 
