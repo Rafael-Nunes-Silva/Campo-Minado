@@ -1,48 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
 
 class tableMinado
 {
-    static KeyValuePair<string, uint> GetInputs()
-    {
-        Console.ResetColor();
-
-        Console.Write("Insira a coluna: ");
-        string coluna = Console.ReadLine().ToUpper();
-        
-        if (int.TryParse(coluna, out int i) || coluna.Length > 1 || !Regex.IsMatch(coluna, @"^[A-Z]+$")){
-            Console.WriteLine("****************************\nCOLUNA PRECISA SER UMA LETRA\n****************************");
-            return GetInputs();
-        }
-        
-        Console.Write("Insira a linha: ");
-        uint linha = 0;
-        try
-        {
-            linha = Convert.ToUInt32(Console.ReadLine());
-            if (linha < 1 || linha > 26)
-            {
-                Console.WriteLine("****************************************\nLINHA PRECISA SER UM NÚMERO ENTRE 1 E 26\n****************************************");
-                return GetInputs();
-            }
-        }
-        catch
-        {
-            Console.WriteLine("****************************************\nLINHA PRECISA SER UM NÚMERO ENTRE 1 E 26\n****************************************");
-            return GetInputs();
-        }
-
-        return new KeyValuePair<string, uint>(coluna, linha - 1);
-    }
-
     static void Main(string[] args)
     {
         Console.Write("Em qual difficulty deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
-        Difficulty difficulty = Difficulty.NORMAL;
+        Table.Difficulty difficulty = Table.Difficulty.NORMAL;
         try
         {
-            difficulty = (Difficulty)Convert.ToInt32(Console.ReadLine());
+            difficulty = (Table.Difficulty)Convert.ToInt32(Console.ReadLine());
         }
         catch
         {
@@ -58,15 +24,14 @@ class tableMinado
         Table table = new Table(difficulty);
         table.Draw();
 
-        table.PlaceBombs(GetInputs());
-        GameStatus gameStatus = GameLoop(table);
+        Table.GameStatus gameStatus = GameLoop(table);
 
-        if (gameStatus == GameStatus.VENCEU)
+        if (gameStatus == Table.GameStatus.WON)
         {
             Console.ForegroundColor = ConsoleColor.Green;
             Console.WriteLine("Parabens! Você venceu!");
         }
-        else if (gameStatus == GameStatus.PERDEU)
+        else if (gameStatus == Table.GameStatus.LOST)
         {
             Console.ForegroundColor = ConsoleColor.Red;
             Console.WriteLine("Você perdeu :(");
@@ -78,15 +43,15 @@ class tableMinado
             Main(args);
     }
 
-    static GameStatus GameLoop(Table table)
+    static Table.GameStatus GameLoop(Table table)
     {
-        GameStatus gameStatus = GameStatus.JOGANDO;
+        Table.GameStatus gameStatus = Table.GameStatus.PLAYING;
         do
         {
-            gameStatus = table.Play(GetInputs());
+            gameStatus = table.Play(InputHandler.GetGameInput(table));
 
             table.Draw();
-        } while (gameStatus == GameStatus.JOGANDO);
+        } while (gameStatus == Table.GameStatus.PLAYING);
         return gameStatus;
     }
 }
