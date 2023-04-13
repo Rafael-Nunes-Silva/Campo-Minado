@@ -4,7 +4,7 @@ class tableMinado
 {
     static void Main(string[] args)
     {
-        Console.Write("Em qual difficulty deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
+        Console.Write("Em qual dificuldade deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
         Table.Difficulty difficulty = Table.Difficulty.NORMAL;
         try
         {
