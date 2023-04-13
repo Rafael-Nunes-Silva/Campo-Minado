@@ -162,9 +162,9 @@ public class Table
             }
         }
 
-        cells[startPos.column][startPos.line].bomb = false;
+        cells[startPos.line][startPos.column].bomb = false;
 
-        OpenArea(startPos.column, startPos.line, false);
+        OpenArea(startPos.line, startPos.column, false);
 
         Draw();
     }
