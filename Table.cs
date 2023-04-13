@@ -38,8 +38,8 @@ public class Table
         ConsoleColor.Green,
         ConsoleColor.DarkGreen,
         ConsoleColor.DarkYellow,
+        ConsoleColor.Cyan,
         ConsoleColor.Blue,
-        ConsoleColor.DarkBlue,
         ConsoleColor.Magenta,
         ConsoleColor.DarkMagenta,
         ConsoleColor.DarkRed
