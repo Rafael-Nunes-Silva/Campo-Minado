@@ -29,6 +29,7 @@ public class Table
 
     Cell[][] cells;
     public int numOfColumns = 26, numOfLines = 26;
+    int highlitedLine = -1;
 
     bool firstPlay = true;
 
@@ -79,6 +80,9 @@ public class Table
         {
             Console.ResetColor();
             Console.Write($"{((i < 9) ? " " + (i + 1).ToString() : (i + 1).ToString())}|");
+
+            if (i == highlitedLine)
+                Console.BackgroundColor = ConsoleColor.White;
             for (int j = 0; j < numOfColumns; j++)
             {
                 Console.ForegroundColor = colors[0];
@@ -112,7 +116,7 @@ public class Table
         }
     }
 
-    public GameStatus Play(InputHandler.GameInput[] pos)
+    public GameStatus Play(InputHandler.InputCell[] pos)
     {
         if (pos.Length == 0)
             return GameStatus.PLAYING;
@@ -125,12 +129,6 @@ public class Table
 
         for (int i = 0; i < pos.Length; i++)
         {
-            if (pos[i].flag)
-            {
-                cells[pos[i].line][pos[i].column].flag = !cells[pos[i].line][pos[i].column].flag;
-                continue;
-            }
-
             cells[pos[i].line][pos[i].column].hidden = false;
             if (cells[pos[i].line][pos[i].column].bomb)
             {
@@ -151,7 +149,22 @@ public class Table
         return GameStatus.PLAYING;
     }
 
-    void PlaceBombs(InputHandler.GameInput startPos)
+    public void PutFlags(InputHandler.InputCell[] pos)
+    {
+        for (int i = 0; i < pos.Length; i++)
+        {
+            cells[pos[i].line][pos[i].column].flag = !cells[pos[i].line][pos[i].column].flag;
+        }
+    }
+
+    public void HighlightLine(int line)
+    {
+        if (highlitedLine == line)
+            highlitedLine = -1;
+        else highlitedLine = line;
+    }
+
+    void PlaceBombs(InputHandler.InputCell startPos)
     {
         Random r = new Random(DateTime.Now.Second);
         for (int i = 0; i < numOfLines; i++)

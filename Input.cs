@@ -34,32 +34,31 @@ static public class InputHandler
         { 'Z', 25 }
     };
 
-    public struct GameInput
+    public enum InputType
+    {
+        UNKNOWN,
+        PLAY,
+        FLAG,
+        HILIGHT
+    }
+
+    public struct InputCell
     {
         public readonly int column, line;
-        public readonly bool flag;
 
-        public GameInput(int column, int line, bool flag)
+        public InputCell(int column, int line)
         {
             this.column = column;
             this.line = line;
-            this.flag = flag;
         }
     }
 
-    static public GameInput[] GetGameInput(Table table)
+    static public InputCell[] GetInputCells(Table table, string input)
     {
-        Console.ResetColor();
-        Console.Write("Insira onde deseja jogar: ");
-
-        string input = Console.ReadLine().ToUpper();
-
-        Regex playRegex = new Regex("[A-Z][0-9]?[0-9]"),
-            flagRegex = new Regex("-F$");
+        Regex playRegex = new Regex("[A-Z][0-9]?[0-9]");
         MatchCollection playMatches = playRegex.Matches(input);
-        Match flagMatch = flagRegex.Match(input);
 
-        List<GameInput> gameInputs = new List<GameInput>(playMatches.Count);
+        List<InputCell> gameInputs = new List<InputCell>(playMatches.Count);
         for (int i = 0; i < playMatches.Count; i++)
         {
             int column = letterIndexMap[playMatches[i].ToString()[0]],
@@ -70,8 +69,43 @@ static public class InputHandler
             if (line < 0 || line > table.numOfLines-1)
                 continue;
 
-            gameInputs.Add(new GameInput(column, line, flagMatch.Success));
+            gameInputs.Add(new InputCell(column, line));
         }
         return gameInputs.ToArray();
+    }
+
+    static public int GetHighlightInputLine(Table table, string input)
+    {
+        Regex lineRegex = new Regex("^[0-9]?[0-9]");
+
+        int line = Convert.ToInt32(lineRegex.Match(input).ToString())-1;
+
+        if (line < 0 || line > table.numOfLines - 1)
+            return -1;
+
+        return line;
+    }
+
+    static public InputType GetGameInput(out string input)
+    {
+        Console.ResetColor();
+        Console.Write("Insira seu comando: ");
+
+        input = Console.ReadLine().ToUpper();
+
+        Regex playRegex = new Regex("[A-Z][0-9]?[0-9]"),
+            flagRegex = new Regex("-F$"),
+            highlightRegex = new Regex("^[0-9]?[0-9] -H$");
+
+        if (highlightRegex.IsMatch(input))
+            return InputType.HILIGHT;
+
+        if (flagRegex.IsMatch(input))
+            return InputType.FLAG;
+
+        if (playRegex.IsMatch(input))
+            return InputType.PLAY;
+
+        return InputType.UNKNOWN;
     }
 }
