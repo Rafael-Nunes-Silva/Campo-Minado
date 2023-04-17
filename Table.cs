@@ -73,7 +73,8 @@ public class Table
     {
         Console.Clear();
         Console.ResetColor();
-
+        Console.CursorVisible = false;
+        
         Console.Write($"  |{"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|".Substring(0, numOfColumns * 2)}\n");
 
         for (int i = 0; i < numOfLines; i++)
@@ -114,6 +115,8 @@ public class Table
             }
             Console.Write("\n");
         }
+
+        Console.CursorVisible = true;
     }
 
     public GameStatus Play(InputHandler.InputCell[] pos)
@@ -177,7 +180,7 @@ public class Table
 
         cells[startPos.line][startPos.column].bomb = false;
 
-        OpenArea(startPos.line, startPos.column, false);
+        OpenArea(startPos.line, startPos.column, (difficulty == Difficulty.EASY ? true : false));
 
         Draw();
     }

@@ -5,12 +5,7 @@ class tableMinado
 {
     static void Main(string[] args)
     {
-        /*
-        Console.WriteLine(new Regex("^[0-9]?[0-9]").Match("15 -h").ToString());
-        Console.Read();
-        return;
-        */
-
+        Console.Clear();
         Console.Write("Em qual dificuldade deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
         Table.Difficulty difficulty = Table.Difficulty.NORMAL;
         try

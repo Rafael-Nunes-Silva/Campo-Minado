@@ -90,7 +90,7 @@ static public class InputHandler
     {
         Console.ResetColor();
         Console.Write("Insira seu comando: ");
-
+        
         input = Console.ReadLine().ToUpper();
 
         Regex playRegex = new Regex("[A-Z][0-9]?[0-9]"),
