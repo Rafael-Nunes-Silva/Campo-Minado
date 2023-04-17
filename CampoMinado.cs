@@ -40,6 +40,7 @@ class tableMinado
         }
 
         Console.ResetColor();
+        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
         Console.Write("Quer tentar de novo?(Y/n): ");
         if (Console.ReadLine().ToUpper() == "Y")
             Main(args);

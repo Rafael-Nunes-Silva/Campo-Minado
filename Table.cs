@@ -29,9 +29,14 @@ public class Table
 
     Cell[][] cells;
     public int numOfColumns = 26, numOfLines = 26;
+    public int maxFlags = 0, flags = 0;
     int highlitedLine = -1;
+    DateTime startTime;
+    public int elapsedTime = 0;
 
     bool firstPlay = true;
+
+    Difficulty difficulty;
 
     static readonly ConsoleColor[] colors =
     {
@@ -48,6 +53,7 @@ public class Table
 
     public Table(Difficulty difficulty = Difficulty.NORMAL)
     {
+        this.difficulty = difficulty;
         switch (difficulty)
         {
             case Difficulty.EASY:
@@ -74,8 +80,10 @@ public class Table
         Console.Clear();
         Console.ResetColor();
         Console.CursorVisible = false;
-        
-        Console.Write($"  |{"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|".Substring(0, numOfColumns * 2)}\n");
+
+        elapsedTime = (int)(DateTime.Now - startTime).TotalSeconds;
+        Console.WriteLine($"Bandeiras: {maxFlags - flags} | Tempo: {(elapsedTime < 0 ? 0 : elapsedTime)}s");
+        Console.WriteLine($"  |{"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|".Substring(0, numOfColumns * 2)}");
 
         for (int i = 0; i < numOfLines; i++)
         {
@@ -126,6 +134,7 @@ public class Table
 
         if (firstPlay)
         {
+            startTime = DateTime.Now;
             PlaceBombs(pos[0]);
             firstPlay = false;
         }
@@ -154,9 +163,18 @@ public class Table
 
     public void PutFlags(InputHandler.InputCell[] pos)
     {
-        for (int i = 0; i < pos.Length; i++)
+        for (int i = 0; i < pos.Length && flags < maxFlags; i++)
         {
-            cells[pos[i].line][pos[i].column].flag = !cells[pos[i].line][pos[i].column].flag;
+            if (!cells[pos[i].line][pos[i].column].flag)
+            {
+                cells[pos[i].line][pos[i].column].flag = true;
+                flags++;
+            }
+            else
+            {
+                cells[pos[i].line][pos[i].column].flag = false;
+                flags--;
+            }
         }
     }
 
@@ -175,6 +193,8 @@ public class Table
             for (int j = 0; j < numOfColumns; j++)
             {
                 cells[i][j] = new Cell(true, r.Next() % 4 == 0);
+                if (cells[i][j].bomb)
+                    maxFlags++;
             }
         }
 
