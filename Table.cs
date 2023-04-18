@@ -38,7 +38,7 @@ public class Table
 
     Difficulty difficulty;
 
-    static readonly ConsoleColor[] colors =
+    public static readonly ConsoleColor[] colors =
     {
         ConsoleColor.DarkGray,
         ConsoleColor.Green,

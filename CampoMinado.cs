@@ -1,12 +1,45 @@
 ﻿using System;
-using System.Text.RegularExpressions;
 
 class tableMinado
 {
-    static void Main(string[] args)
+    const string title =    "   _____                              __  __ _                 _       \n" +
+                            "  / ____|                            |  \\/  (_)               | |      \n" +
+                            " | |     __ _ _ __ ___  _ __   ___   | \\  / |_ _ __   __ _  __| | ___  \n" +
+                            " | |    / _` | '_ ` _ \\| '_ \\ / _ \\  | |\\/| | | '_ \\ / _` |/ _` |/ _ \\ \n" +
+                            " | |___| (_| | | | | | | |_) | (_) | | |  | | | | | | (_| | (_| | (_) |\n" +
+                            "  \\_____\\__,_|_| |_| |_| .__/ \\___/  |_|  |_|_|_| |_|\\__,_|\\__,_|\\___/ \n" +
+                            "                       | |                                             \n" +
+                            "                       |_|                                             \n\n";
+
+    static void MainMenu()
     {
         Console.Clear();
-        Console.Write("Em qual dificuldade deseja jogar?\n0 - Fácil\n1 - Normal\n2 - Difícil\n: ");
+
+        for (int i=0, j=0; i < title.Length; i++)
+        {
+            Console.ForegroundColor = Table.colors[j % Table.colors.Length];
+            Console.Write(title[i]);
+
+            if (title[i] != ' ')
+                j++;
+        }
+        Console.ResetColor();
+    }
+
+    static void Main(string[] args)
+    {
+        MainMenu();
+
+        Console.WriteLine("Em qual dificuldade deseja jogar?");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("0 - Fácil");
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("1 - Normal");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("2 - Difícil");
+        Console.ResetColor();
+        Console.Write(": ");
+        
         Table.Difficulty difficulty = Table.Difficulty.NORMAL;
         try
         {
