@@ -1,6 +1,6 @@
 ﻿using System;
 
-class tableMinado
+class CampoMinado
 {
     const string title =    "   _____                              __  __ _                 _       \n" +
                             "  / ____|                            |  \\/  (_)               | |      \n" +
