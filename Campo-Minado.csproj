@@ -55,6 +55,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Connector.cs" />
     <Compile Include="Table.cs" />
     <Compile Include="CampoMinado.cs" />
     <Compile Include="Input.cs" />
