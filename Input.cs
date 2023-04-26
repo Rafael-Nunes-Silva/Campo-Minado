@@ -53,6 +53,27 @@ static public class InputHandler
         }
     }
 
+    static public Table.Difficulty GetDifficulty()
+    {
+        Console.WriteLine("Em qual dificuldade deseja jogar?");
+        Console.ForegroundColor = ConsoleColor.Green;
+        Console.WriteLine("0 - Fácil");
+        Console.ForegroundColor = ConsoleColor.Yellow;
+        Console.WriteLine("1 - Normal");
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.WriteLine("2 - Difícil");
+        Console.ResetColor();
+        Console.Write(": ");
+
+        Table.Difficulty difficulty = Table.Difficulty.NORMAL;
+        try { difficulty = (Table.Difficulty)Convert.ToInt32(Console.ReadLine()); }
+        catch { GetDifficulty(); }
+        if ((int)difficulty < 0 || (int)difficulty > 2)
+            GetDifficulty();
+
+        return difficulty;
+    }
+
     static public InputCell[] GetInputCells(Table table, string input)
     {
         Regex playRegex = new Regex("[A-Z][0-9]?[0-9]");
