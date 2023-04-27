@@ -86,7 +86,7 @@ class CampoMinado
 
         while (!Connector.Connect(ip, port, name))
         {
-            Console.Write("Deseja tentar novamente?(Y/n): ");
+            Console.Write("Falha ao conectar no servidor\nDeseja tentar novamente?(Y/n): ");
             if (Console.ReadLine().ToUpper() != "Y")
                 return;
         }
@@ -95,55 +95,62 @@ class CampoMinado
 
         while (Connector.IsConnected())
         {
-            switch (Console.ReadLine().ToLower())
+            // Console.Clear();
+            Console.WriteLine(Connector.GetRooms());
+
+            Console.WriteLine("0 - Desconectar");
+            Console.WriteLine("1 - Recarregar salas");
+            Console.WriteLine("2 - Criar sala");
+            Console.WriteLine("3 - Conectar a sala");
+            Console.Write(": ");
+
+            try
             {
-                case "-disconnect":
-                    Connector.Disconnect();
-                    break;
-                case "-create_room":
-                    Console.Write("Insira o nome da sala: ");
-                    string roomName = Console.ReadLine();
+                int input = int.Parse(Console.ReadLine());
+                string roomName = "";
 
-                    int maxPlayers = 2;
-                    Console.Write("Insira o número máximo de jogadores: ");
-                    try { port = int.Parse(Console.ReadLine()); }
-                    catch (Exception e) 
-                    { 
-                        Console.WriteLine("Valor invalido");
+                switch (input)
+                {
+                    case 0:
+                        Connector.Disconnect();
                         break;
-                    }
+                    case 1:
+                        break;
+                    case 2:
+                        Console.Write("Insira o nome da sala: ");
+                        roomName = Console.ReadLine();
 
-                    while(!Connector.CreateRoom(roomName, maxPlayers))
-                    {
-                        Console.Write("Deseja tentar novamente?(Y/n): ");
-                        if (Console.ReadLine().ToUpper() != "Y")
+                        int maxPlayers = 2;
+                        Console.Write("Insira o número máximo de jogadores: ");
+                        try { maxPlayers = int.Parse(Console.ReadLine()); }
+                        catch (Exception e)
+                        {
+                            Console.WriteLine("Valor invalido");
                             break;
-                    }
-                    break;
+                        }
+
+                        while (!Connector.CreateRoom(roomName, maxPlayers))
+                        {
+                            Console.Write("Falha ao criar sala\nDeseja tentar novamente?(Y/n): ");
+                            if (Console.ReadLine().ToUpper() != "Y")
+                                break;
+                        }
+                        break;
+                    case 3:
+                        Console.Write("Insira o nome da sala: ");
+                        while (!Connector.EnterRoom(Console.ReadLine()))
+                        {
+                            Console.Write("Falha ao conectar na sala\nDeseja tentar novamente?(Y/n): ");
+                            if (Console.ReadLine().ToUpper() != "Y")
+                                break;
+                        }
+                        break;
+                }
             }
+            catch (Exception e) { continue; }
         }
 
-        /* Create room
-        Console.Write("Insira o nome da sala: ");
-        string roomName = Console.ReadLine();
-
-        int maxPlayers = 1;
-        Console.WriteLine("Insira a quantidade máxima de jogadores: ");
-        try { maxPlayers = int.Parse(Console.ReadLine());}
-        catch (Exception e)
-        {
-            Console.WriteLine("Valor invalido");
-            Multiplayer();
-        }
-
-        connect:
-        if (!Connector.Connect(ip, port, roomName, maxPlayers))
-        {
-            Console.Write("Falha ao conectar com o servidor\nDeseja tentar novamente?(Y/n): ");
-            if (Console.ReadLine() == "Y")
-                goto connect;
-        }
-        */
+        Console.WriteLine("Conexão terminada");
     }
 
     static void Main(string[] args)

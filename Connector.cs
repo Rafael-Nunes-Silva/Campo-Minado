@@ -7,6 +7,9 @@ using System.Net.Sockets;
 
 static public class Connector
 {
+    public static readonly string SUCCESS_MSG = "SUCCESS";
+    public static readonly string FAILED_MSG = "FAILED";
+
     static TcpClient tcpClient;
 
     public static bool Connect(string ip, int port, string name)
@@ -89,13 +92,22 @@ static public class Connector
         try
         {
             Write($"CREATE_ROOM|{roomName}|{maxPlayers}");
-            if (Read() == "SUCCESS")
+            if (Read() == SUCCESS_MSG)
                 return true;
         }
-        catch(Exception e)
+        catch(Exception e) { Console.WriteLine("Falha ao criar sala"); }
+        return false;
+    }
+
+    public static bool EnterRoom(string roomName)
+    {
+        try
         {
-            Console.WriteLine("Falha ao criar sala");
+            Write($"CONNECT|{roomName}");
+            if (Read() == SUCCESS_MSG)
+                return true;
         }
+        catch (Exception e) { Console.WriteLine("Falha ao entrar na sala"); }
         return false;
     }
 }
