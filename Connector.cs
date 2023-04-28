@@ -68,6 +68,7 @@ static public class Connector
         }
         catch (Exception e)
         {
+            tcpClient.Close();
             return false;
         }
         return true;
@@ -75,10 +76,18 @@ static public class Connector
 
     public static string Read()
     {
-        Byte[] buffer = new Byte[256];
-        int size = tcpClient.GetStream().Read(buffer, 0, buffer.Length);
+        try
+        {
+            Byte[] buffer = new Byte[256];
+            int size = tcpClient.GetStream().Read(buffer, 0, buffer.Length);
 
-        return Encoding.UTF8.GetString(buffer).Substring(0, size);
+            return Encoding.UTF8.GetString(buffer).Substring(0, size);
+        }
+        catch (Exception e)
+        {
+            tcpClient.Close();
+        }
+        return "DISCONNECTED";
     }
 
     public static string GetRooms()
@@ -93,7 +102,10 @@ static public class Connector
         {
             Write($"CREATE_ROOM|{roomName}|{maxPlayers}");
             if (Read() == SUCCESS_MSG)
+            {
+                Console.WriteLine("Sala criada com sucesso");
                 return true;
+            }
         }
         catch(Exception e) { Console.WriteLine("Falha ao criar sala"); }
         return false;
@@ -105,7 +117,10 @@ static public class Connector
         {
             Write($"CONNECT|{roomName}");
             if (Read() == SUCCESS_MSG)
+            {
+                Console.WriteLine("Conectado com sucesso");
                 return true;
+            }
         }
         catch (Exception e) { Console.WriteLine("Falha ao entrar na sala"); }
         return false;

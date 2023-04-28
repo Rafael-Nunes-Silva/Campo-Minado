@@ -86,7 +86,7 @@ class CampoMinado
 
         while (!Connector.Connect(ip, port, name))
         {
-            Console.Write("Falha ao conectar no servidor\nDeseja tentar novamente?(Y/n): ");
+            Console.Write("Deseja tentar conectar novamente?(Y/n): ");
             if (Console.ReadLine().ToUpper() != "Y")
                 return;
         }
@@ -95,11 +95,11 @@ class CampoMinado
 
         while (Connector.IsConnected())
         {
-            // Console.Clear();
+            Console.Clear();
             Console.WriteLine(Connector.GetRooms());
 
             Console.WriteLine("0 - Desconectar");
-            Console.WriteLine("1 - Recarregar salas");
+            Console.WriteLine("1 - Mostrar salas");
             Console.WriteLine("2 - Criar sala");
             Console.WriteLine("3 - Conectar a sala");
             Console.Write(": ");
@@ -129,21 +129,11 @@ class CampoMinado
                             break;
                         }
 
-                        while (!Connector.CreateRoom(roomName, maxPlayers))
-                        {
-                            Console.Write("Falha ao criar sala\nDeseja tentar novamente?(Y/n): ");
-                            if (Console.ReadLine().ToUpper() != "Y")
-                                break;
-                        }
+                        Connector.CreateRoom(roomName, maxPlayers);
                         break;
                     case 3:
                         Console.Write("Insira o nome da sala: ");
-                        while (!Connector.EnterRoom(Console.ReadLine()))
-                        {
-                            Console.Write("Falha ao conectar na sala\nDeseja tentar novamente?(Y/n): ");
-                            if (Console.ReadLine().ToUpper() != "Y")
-                                break;
-                        }
+                        Connector.EnterRoom(Console.ReadLine());
                         break;
                 }
             }
