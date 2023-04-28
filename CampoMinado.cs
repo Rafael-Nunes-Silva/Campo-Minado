@@ -130,6 +130,7 @@ class CampoMinado
                         }
 
                         Connector.CreateRoom(roomName, maxPlayers);
+                        Connector.EnterRoom(roomName);
                         break;
                     case 3:
                         Console.Write("Insira o nome da sala: ");
