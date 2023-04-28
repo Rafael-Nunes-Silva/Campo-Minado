@@ -35,6 +35,7 @@ public class Table
     public int elapsedTime = 0;
 
     bool firstPlay = true;
+    int tableSeed = -1;
 
     Difficulty difficulty;
 
@@ -51,8 +52,9 @@ public class Table
         ConsoleColor.DarkRed
     };
 
-    public Table(Difficulty difficulty = Difficulty.NORMAL)
+    public Table(Difficulty difficulty = Difficulty.NORMAL, int tableSeed = -1)
     {
+        this.tableSeed = tableSeed;
         this.difficulty = difficulty;
         switch (difficulty)
         {
@@ -187,12 +189,12 @@ public class Table
 
     void PlaceBombs(InputHandler.InputCell startPos)
     {
-        Random r = new Random(DateTime.Now.Second);
+        Random rand = new Random(tableSeed < 0 ? DateTime.Now.Second : tableSeed);
         for (int i = 0; i < numOfLines; i++)
         {
             for (int j = 0; j < numOfColumns; j++)
             {
-                cells[i][j] = new Cell(true, r.Next() % 4 == 0);
+                cells[i][j] = new Cell(true, rand.Next() % 4 == 0);
                 if (cells[i][j].bomb)
                     maxFlags++;
             }
