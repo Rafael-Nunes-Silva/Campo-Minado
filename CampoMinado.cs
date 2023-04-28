@@ -2,6 +2,7 @@
 
 class CampoMinado
 {
+    static bool exit = false;
     const string title =    "   _____                              __  __ _                 _       \n" +
                             "  / ____|                            |  \\/  (_)               | |      \n" +
                             " | |     __ _ _ __ ___  _ __   ___   | \\  / |_ _ __   __ _  __| | ___  \n" +
@@ -27,7 +28,8 @@ class CampoMinado
     static void MainMenu()
     {
         int mode = 0;
-        Console.Write("Qual modo deseja jogar?\n0 - Um jogador\n1 - Multiplayer\n: ");
+        // Console.Write("Qual modo deseja jogar?\n0 - Um jogador\n1 - Multiplayer\n: ");
+        Console.Write("Menu Principal\n0 - Sair\n1 - Um Jogador\n2 - Multiplayer\n: ");
         try { mode = int.Parse(Console.ReadLine()); }
         catch (Exception e)
         {
@@ -38,9 +40,12 @@ class CampoMinado
         switch (mode)
         {
             case 0:
+                exit = true;
+                return;
+            case 1:
                 Singleplayer();
                 break;
-            case 1:
+            case 2:
                 Multiplayer();
                 break;
         }
@@ -66,6 +71,8 @@ class CampoMinado
 
         Console.ResetColor();
         Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
     }
 
     static void Multiplayer()
@@ -142,6 +149,9 @@ class CampoMinado
         }
 
         Console.WriteLine("Conexão terminada");
+
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
     }
 
     static void Main(string[] args)
@@ -174,8 +184,7 @@ class CampoMinado
             Main(args);
         */
 
-        Console.Write("Quer tentar de novo?(Y/n): ");
-        if (Console.ReadLine().ToUpper() == "Y")
+        if (!exit)
             Main(args);
     }
 
