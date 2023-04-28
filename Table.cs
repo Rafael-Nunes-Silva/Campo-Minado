@@ -199,6 +199,7 @@ public class Table
                     maxFlags++;
             }
         }
+        maxFlags--;
 
         cells[startPos.line][startPos.column].bomb = false;
 
