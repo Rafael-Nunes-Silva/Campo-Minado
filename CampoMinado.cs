@@ -3,7 +3,7 @@
 class CampoMinado
 {
     static bool exit = false;
-    const string title =    "   _____                              __  __ _                 _       \n" +
+    const string title = "   _____                              __  __ _                 _       \n" +
                             "  / ____|                            |  \\/  (_)               | |      \n" +
                             " | |     __ _ _ __ ___  _ __   ___   | \\  / |_ _ __   __ _  __| | ___  \n" +
                             " | |    / _` | '_ ` _ \\| '_ \\ / _ \\  | |\\/| | | '_ \\ / _` |/ _` |/ _ \\ \n" +
@@ -43,7 +43,8 @@ class CampoMinado
                 exit = true;
                 return;
             case 1:
-                Singleplayer();
+                PlayGame(false);
+                // Singleplayer();
                 break;
             case 2:
                 Multiplayer();
@@ -83,7 +84,8 @@ class CampoMinado
         int port = 6778;
         Console.Write("Insira a porta do servidor: ");
         try { port = int.Parse(Console.ReadLine()); }
-        catch (Exception e) {
+        catch (Exception e)
+        {
             Console.WriteLine("Valor invalido");
             Multiplayer();
         }
@@ -136,12 +138,18 @@ class CampoMinado
                             break;
                         }
 
-                        Connector.CreateRoom(roomName, maxPlayers);
+                        Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty());
                         Connector.EnterRoom(roomName);
+
+                        WaitingRoom();
+                        PlayGame(true);
                         break;
                     case 3:
                         Console.Write("Insira o nome da sala: ");
                         Connector.EnterRoom(Console.ReadLine());
+
+                        WaitingRoom();
+                        PlayGame(true);
                         break;
                 }
             }
@@ -152,6 +160,71 @@ class CampoMinado
 
         Console.Write("Enter para continuar");
         Console.ReadLine();
+    }
+
+    static void WaitingRoom()
+    {
+        while (!Connector.Read("START")) { }
+    }
+
+    static void PlayGame(bool multiplayer = false)
+    {
+        Table.Difficulty difficulty;
+        if (multiplayer)
+        {
+            Connector.Read(out string[] msgArr, "DIFFICULTY");
+            difficulty = (Table.Difficulty)int.Parse(msgArr[0]);
+        }
+        else difficulty = InputHandler.GetDifficulty();
+
+        Table table = new Table(difficulty);
+        table.Draw();
+
+        Table.GameStatus gameStatus = GameLoop(table);
+
+        if (gameStatus == Table.GameStatus.WON)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Parabens! Você venceu!");
+        }
+        else if (gameStatus == Table.GameStatus.LOST)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Você perdeu :(");
+        }
+
+        if (multiplayer)
+        {
+            Connector.Write("GAMESTATUS", ((int)gameStatus).ToString());
+            // Connector.Disconnect();
+        }
+
+        Console.ResetColor();
+        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
+    }
+    static Table.GameStatus GameLoop(Table table)
+    {
+        Table.GameStatus gameStatus = Table.GameStatus.PLAYING;
+        do
+        {
+            switch (InputHandler.GetGameInput(out string input))
+            {
+                case InputHandler.InputType.PLAY:
+                    gameStatus = table.Play(InputHandler.GetInputCells(table, input));
+                    break;
+                case InputHandler.InputType.FLAG:
+                    table.PutFlags(InputHandler.GetInputCells(table, input));
+                    break;
+                case InputHandler.InputType.HILIGHT:
+                    table.HighlightLine(InputHandler.GetHighlightInputLine(table, input));
+                    break;
+            }
+
+            table.Draw();
+        } while (gameStatus == Table.GameStatus.PLAYING);
+        return gameStatus;
     }
 
     static void Main(string[] args)
@@ -186,28 +259,5 @@ class CampoMinado
 
         if (!exit)
             Main(args);
-    }
-
-    static Table.GameStatus GameLoop(Table table)
-    {
-        Table.GameStatus gameStatus = Table.GameStatus.PLAYING;
-        do
-        {
-            switch(InputHandler.GetGameInput(out string input))
-            {
-                case InputHandler.InputType.PLAY:
-                    gameStatus = table.Play(InputHandler.GetInputCells(table, input));
-                    break;
-                case InputHandler.InputType.FLAG:
-                    table.PutFlags(InputHandler.GetInputCells(table, input));
-                    break;
-                case InputHandler.InputType.HILIGHT:
-                    table.HighlightLine(InputHandler.GetHighlightInputLine(table, input));
-                    break;
-            }
-
-            table.Draw();
-        } while (gameStatus == Table.GameStatus.PLAYING);
-        return gameStatus;
     }
 }

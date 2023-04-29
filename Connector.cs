@@ -7,19 +7,18 @@ using System.Net.Sockets;
 
 static public class Connector
 {
-    public static readonly string SUCCESS_MSG = "SUCCESS";
-    public static readonly string FAILED_MSG = "FAILED";
+    static TcpClient tcpConn;
 
-    static TcpClient tcpClient;
+    static List<KeyValuePair<string,string[]>> messageQueue = new List<KeyValuePair<string, string[]>>(0);
 
     public static bool Connect(string ip, int port, string name)
     {
         try
         {
-            tcpClient = new TcpClient(ip, port);
-            Write(name);
+            tcpConn = new TcpClient(ip, port);
+            Write("NAME", name);
 
-            // Task.Run(Listen);
+            Task.Run(Listen);
 
             return true;
         }
@@ -30,78 +29,118 @@ static public class Connector
 
     public static void Disconnect()
     {
-        tcpClient.Close();
+        tcpConn.Close();
     }
 
     public static bool IsConnected()
     {
-        return tcpClient.Connected;
+        return tcpConn.Connected;
     }
 
-    /*
-    public static void Listen()
-    {
-        while (tcpClient.Connected)
-        {
-            try
-            {
-                string[] msg = Read().Split('|');
-
-                switch (msg[0])
-                {
-                    case "CONNECTED":
-                        Console.WriteLine(msg[1]);
-                        break;
-                }
-            }
-            catch (Exception e) { break; }
-        }
-    }
-    */
-
-    public static bool Write(string msg)
+    public static bool Write(params string[] msgParts)
     {
         try
         {
+            string msg = "";
+            if (msgParts.Length > 1)
+            {
+                msg = $"|{msgParts[0]}?";
+                for (int i = 1; i < msgParts.Length; i++)
+                    msg += $"{msgParts[i]}{(i < msgParts.Length ? "&" : "")}";
+                msg += "|";
+            }
+            else msg = $"|{msgParts[0]}|";
+
             Byte[] buffer = Encoding.UTF8.GetBytes(msg);
-            tcpClient.GetStream().Write(buffer, 0, buffer.Length);
+            tcpConn.GetStream().Write(buffer, 0, buffer.Length);
         }
-        catch (Exception e)
-        {
-            tcpClient.Close();
-            return false;
-        }
+        catch (Exception e) { return false; }
         return true;
     }
 
-    public static string Read()
+    public static bool Read(string msgName)
     {
-        try
+        DateTime start = DateTime.Now;
+        while ((DateTime.Now - start).TotalSeconds < 30)
         {
-            Byte[] buffer = new Byte[256];
-            int size = tcpClient.GetStream().Read(buffer, 0, buffer.Length);
+            for (int i = 0; i < messageQueue.Count; i++)
+            {
+                if (messageQueue[i].Key == msgName)
+                {
+                    messageQueue.RemoveAt(i);
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
-            return Encoding.UTF8.GetString(buffer).Substring(0, size);
-        }
-        catch (Exception e)
+    public static bool Read(out string[] msg, string msgName)
+    {
+        DateTime start = DateTime.Now;
+        while ((DateTime.Now - start).TotalSeconds < 30)
         {
-            tcpClient.Close();
+            for (int i = 0; i < messageQueue.Count; i++)
+            {
+                if (messageQueue[i].Key == msgName)
+                {
+                    msg = new string[messageQueue[i].Value.Length];
+                    for (int j = 0; j < messageQueue[i].Value.Length; j++)
+                        msg[j] = messageQueue[i].Value[j];
+                    messageQueue.RemoveAt(i);
+                    return true;
+                }
+            }
         }
-        return "DISCONNECTED";
+        msg = new string[0];
+        return false;
+    }
+
+    static void Listen()
+    {
+        while (tcpConn.Connected)
+        {
+            try
+            {
+                Byte[] buffer = new Byte[512];
+                int size = tcpConn.GetStream().Read(buffer, 0, buffer.Length);
+
+                string[] msg = Encoding.UTF8.GetString(buffer).Substring(0, size).Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+
+                if (msg.Length > 1)
+                    messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], msg[1].Split('&')));
+                else messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], new string[] { "" }));
+
+                /* KeyValuePair<string, string[]>
+                List<string> msgArr = new List<string>(0);
+                foreach (string s in Encoding.UTF8.GetString(buffer).Substring(0, size).Split('|'))
+                    msgArr.Add(s);
+
+                messageQueue.Add(msgArr.ToArray());
+                */
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                break;
+            }
+        }
     }
 
     public static string GetRooms()
     {
         Write("GET_ROOMS");
-        return Read();
+        if (Read(out string[] msgArr, "ROOMS"))
+            return msgArr[0];
+        return "Servidor não respondeu";
     }
 
-    public static bool CreateRoom(string roomName, int maxPlayers)
+    public static bool CreateRoom(string roomName, int maxPlayers, Table.Difficulty difficulty)
     {
         try
         {
-            Write($"CREATE_ROOM|{roomName}|{maxPlayers}");
-            if (Read() == SUCCESS_MSG)
+            Write($"CREATE_ROOM|{roomName}|{maxPlayers}|{difficulty}");
+            if (Read("SUCCESS"))
             {
                 Console.WriteLine("Sala criada com sucesso");
                 return true;
@@ -115,8 +154,8 @@ static public class Connector
     {
         try
         {
-            Write($"CONNECT|{roomName}");
-            if (Read() == SUCCESS_MSG)
+            Write($"ENTER_ROOM|{roomName}");
+            if (Read("SUCCESS"))
             {
                 Console.WriteLine("Conectado com sucesso");
                 return true;

@@ -55,7 +55,7 @@ static public class InputHandler
 
     static public Table.Difficulty GetDifficulty()
     {
-        Console.WriteLine("Em qual dificuldade deseja jogar?");
+        Console.WriteLine("Escolha a dificuldade");
         Console.ForegroundColor = ConsoleColor.Green;
         Console.WriteLine("0 - Fácil");
         Console.ForegroundColor = ConsoleColor.Yellow;
@@ -67,9 +67,10 @@ static public class InputHandler
 
         Table.Difficulty difficulty = Table.Difficulty.NORMAL;
         try { difficulty = (Table.Difficulty)Convert.ToInt32(Console.ReadLine()); }
-        catch { GetDifficulty(); }
+        catch { return GetDifficulty(); }
+
         if ((int)difficulty < 0 || (int)difficulty > 2)
-            GetDifficulty();
+            return GetDifficulty();
 
         return difficulty;
     }
