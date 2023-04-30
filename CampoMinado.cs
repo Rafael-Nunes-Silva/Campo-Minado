@@ -28,7 +28,6 @@ class CampoMinado
     static void MainMenu()
     {
         int mode = 0;
-        // Console.Write("Qual modo deseja jogar?\n0 - Um jogador\n1 - Multiplayer\n: ");
         Console.Write("Menu Principal\n0 - Sair\n1 - Um Jogador\n2 - Multiplayer\n: ");
         try { mode = int.Parse(Console.ReadLine()); }
         catch (Exception e)
@@ -50,6 +49,9 @@ class CampoMinado
                 Multiplayer();
                 break;
         }
+
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
     }
 
     static void Singleplayer()
@@ -72,8 +74,6 @@ class CampoMinado
 
         Console.ResetColor();
         Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
-        Console.Write("Enter para continuar");
-        Console.ReadLine();
     }
 
     static void Multiplayer()
@@ -121,10 +121,11 @@ class CampoMinado
                 switch (input)
                 {
                     case 0:
+                        Connector.Write("DISCONNECT");
                         Connector.Disconnect();
-                        break;
+                        return;
                     case 1:
-                        break;
+                        continue;
                     case 2:
                         Console.Write("Insira o nome da sala: ");
                         roomName = Console.ReadLine();
@@ -153,18 +154,54 @@ class CampoMinado
                         break;
                 }
             }
-            catch (Exception e) { continue; }
+            catch (Exception e) 
+            {
+                Console.WriteLine(e);
+                continue; 
+            }
         }
 
         Console.WriteLine("Conexão terminada");
-
-        Console.Write("Enter para continuar");
-        Console.ReadLine();
     }
 
     static void WaitingRoom()
     {
-        while (!Connector.Read("START")) { }
+        while (!Connector.Read("STARTGAME"))
+        {
+            Console.Clear();
+            Console.WriteLine(Connector.GetPlayers());
+
+            Console.WriteLine("0 - Desconectar");
+            Console.WriteLine("1 - Mostrar jogadores");
+            Console.WriteLine("2 - Estou pronto");
+            Console.WriteLine("3 - Não estou pronto");
+            Console.Write(": ");
+
+            try
+            {
+                int input = int.Parse(Console.ReadLine());
+                switch (input)
+                {
+                    case 0:
+                        Connector.Write("DICONNECT");
+                        Connector.Disconnect();
+                        return;
+                    case 1:
+                        continue;
+                    case 2:
+                        Connector.Write("READY", true.ToString());
+                        break;
+                    case 3:
+                        Connector.Write("READY", false.ToString());
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                continue;
+            }
+        }
     }
 
     static void PlayGame(bool multiplayer = false)

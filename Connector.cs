@@ -30,7 +30,6 @@ static public class Connector
     public static void Disconnect()
     {
         tcpConn.Close();
-        Write("");
     }
 
     public static bool IsConnected()
@@ -136,7 +135,7 @@ static public class Connector
     {
         try
         {
-            Write($"CREATE_ROOM?{roomName}&{maxPlayers}&{(int)difficulty}");
+            Write("CREATE_ROOM", roomName, maxPlayers.ToString(), ((int)difficulty).ToString());
             if (Read("CREATE_ROOM_SUCCESS"))
             {
                 Console.WriteLine("Sala criada com sucesso");
@@ -151,7 +150,7 @@ static public class Connector
     {
         try
         {
-            Write($"ENTER_ROOM|{roomName}");
+            Write("ENTER_ROOM", roomName);
             if (Read("ENTER_ROOM_SUCCESS"))
             {
                 Console.WriteLine("Conectado com sucesso");
@@ -160,5 +159,13 @@ static public class Connector
         }
         catch (Exception e) { Console.WriteLine("Falha ao entrar na sala"); }
         return false;
+    }
+
+    public static string GetPlayers()
+    {
+        Write("GET_PLAYERS");
+        if (Read(out string[] msgArr, "PLAYERS"))
+            return msgArr[0];
+        return "Servidor não respondeu";
     }
 }
