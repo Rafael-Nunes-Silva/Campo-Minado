@@ -3,7 +3,7 @@
 class CampoMinado
 {
     static bool exit = false;
-    const string title = "   _____                              __  __ _                 _       \n" +
+    const string title =    "   _____                              __  __ _                 _       \n" +
                             "  / ____|                            |  \\/  (_)               | |      \n" +
                             " | |     __ _ _ __ ___  _ __   ___   | \\  / |_ _ __   __ _  __| | ___  \n" +
                             " | |    / _` | '_ ` _ \\| '_ \\ / _ \\  | |\\/| | | '_ \\ / _` |/ _` |/ _ \\ \n" +
@@ -79,9 +79,9 @@ class CampoMinado
     static void Multiplayer()
     {
         Console.Write("Insira o IP do servidor: ");
-        string ip = Console.ReadLine();
+        string ip = "127.0.0.1"; // Console.ReadLine();
 
-        int port = 6778;
+        int port = 6778;/*
         Console.Write("Insira a porta do servidor: ");
         try { port = int.Parse(Console.ReadLine()); }
         catch (Exception e)
@@ -89,6 +89,7 @@ class CampoMinado
             Console.WriteLine("Valor invalido");
             Multiplayer();
         }
+        */
 
         Console.Write("Insira como quer ser chamado: ");
         string name = Console.ReadLine();
@@ -105,7 +106,7 @@ class CampoMinado
         while (Connector.IsConnected())
         {
             Console.Clear();
-            Console.WriteLine(Connector.GetRooms());
+            Console.WriteLine(Connector.rooms); // Connector.GetRooms());
 
             Console.WriteLine("0 - Desconectar");
             Console.WriteLine("1 - Mostrar salas");
@@ -140,17 +141,19 @@ class CampoMinado
                         }
 
                         Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty());
-                        Connector.EnterRoom(roomName);
-
-                        WaitingRoom();
-                        PlayGame(true);
+                        if (Connector.EnterRoom(roomName))
+                        {
+                            WaitingRoom();
+                            PlayGame(true);
+                        }
                         break;
                     case 3:
                         Console.Write("Insira o nome da sala: ");
-                        Connector.EnterRoom(Console.ReadLine());
-
-                        WaitingRoom();
-                        PlayGame(true);
+                        if (Connector.EnterRoom(Console.ReadLine()))
+                        {
+                            WaitingRoom();
+                            PlayGame(true);
+                        }
                         break;
                 }
             }
@@ -166,12 +169,12 @@ class CampoMinado
 
     static void WaitingRoom()
     {
-        while (!Connector.Read("STARTGAME"))
+        while (!Connector.startGame)
         {
             Console.Clear();
-            Console.WriteLine(Connector.GetPlayers());
+            Console.WriteLine(Connector.players); // Connector.GetPlayers());
 
-            Console.WriteLine("0 - Desconectar");
+            Console.WriteLine("0 - Sair da sala");
             Console.WriteLine("1 - Mostrar jogadores");
             Console.WriteLine("2 - Estou pronto");
             Console.WriteLine("3 - Não estou pronto");
@@ -183,8 +186,7 @@ class CampoMinado
                 switch (input)
                 {
                     case 0:
-                        Connector.Write("DICONNECT");
-                        Connector.Disconnect();
+                        Connector.Write("LEAVE_ROOM");
                         return;
                     case 1:
                         continue;
@@ -241,6 +243,7 @@ class CampoMinado
         Console.Write("Enter para continuar");
         Console.ReadLine();
     }
+
     static Table.GameStatus GameLoop(Table table)
     {
         Table.GameStatus gameStatus = Table.GameStatus.PLAYING;
