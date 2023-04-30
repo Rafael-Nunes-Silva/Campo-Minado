@@ -30,6 +30,7 @@ static public class Connector
     public static void Disconnect()
     {
         tcpConn.Close();
+        Write("");
     }
 
     public static bool IsConnected()
@@ -46,7 +47,7 @@ static public class Connector
             {
                 msg = $"|{msgParts[0]}?";
                 for (int i = 1; i < msgParts.Length; i++)
-                    msg += $"{msgParts[i]}{(i < msgParts.Length ? "&" : "")}";
+                    msg += $"{msgParts[i]}{(i < msgParts.Length-1 ? "&" : "")}";
                 msg += "|";
             }
             else msg = $"|{msgParts[0]}|";
@@ -60,16 +61,12 @@ static public class Connector
 
     public static bool Read(string msgName)
     {
-        DateTime start = DateTime.Now;
-        while ((DateTime.Now - start).TotalSeconds < 30)
+        for (int i = 0; i < messageQueue.Count; i++)
         {
-            for (int i = 0; i < messageQueue.Count; i++)
+            if (messageQueue[i].Key == msgName)
             {
-                if (messageQueue[i].Key == msgName)
-                {
-                    messageQueue.RemoveAt(i);
-                    return true;
-                }
+                messageQueue.RemoveAt(i);
+                return true;
             }
         }
         return false;
@@ -77,19 +74,15 @@ static public class Connector
 
     public static bool Read(out string[] msg, string msgName)
     {
-        DateTime start = DateTime.Now;
-        while ((DateTime.Now - start).TotalSeconds < 30)
+        for (int i = 0; i < messageQueue.Count; i++)
         {
-            for (int i = 0; i < messageQueue.Count; i++)
+            if (messageQueue[i].Key == msgName)
             {
-                if (messageQueue[i].Key == msgName)
-                {
-                    msg = new string[messageQueue[i].Value.Length];
-                    for (int j = 0; j < messageQueue[i].Value.Length; j++)
-                        msg[j] = messageQueue[i].Value[j];
-                    messageQueue.RemoveAt(i);
-                    return true;
-                }
+                msg = new string[messageQueue[i].Value.Length];
+                for (int j = 0; j < messageQueue[i].Value.Length; j++)
+                    msg[j] = messageQueue[i].Value[j];
+                messageQueue.RemoveAt(i);
+                return true;
             }
         }
         msg = new string[0];
@@ -105,11 +98,14 @@ static public class Connector
                 Byte[] buffer = new Byte[512];
                 int size = tcpConn.GetStream().Read(buffer, 0, buffer.Length);
 
-                string[] msg = Encoding.UTF8.GetString(buffer).Substring(0, size).Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries);
+                foreach (string receivedMsg in Encoding.UTF8.GetString(buffer).Substring(0, size).Split(new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    string[] msg = receivedMsg.Split('?');
 
-                if (msg.Length > 1)
-                    messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], msg[1].Split('&')));
-                else messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], new string[] { "" }));
+                    if (msg.Length > 1)
+                        messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], msg[1].Split('&')));
+                    else messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], new string[] { "" }));
+                }
 
                 /* KeyValuePair<string, string[]>
                 List<string> msgArr = new List<string>(0);
@@ -121,6 +117,7 @@ static public class Connector
             }
             catch (Exception e)
             {
+                Disconnect();
                 Console.WriteLine(e);
                 break;
             }
@@ -139,8 +136,8 @@ static public class Connector
     {
         try
         {
-            Write($"CREATE_ROOM|{roomName}|{maxPlayers}|{difficulty}");
-            if (Read("SUCCESS"))
+            Write($"CREATE_ROOM?{roomName}&{maxPlayers}&{(int)difficulty}");
+            if (Read("CREATE_ROOM_SUCCESS"))
             {
                 Console.WriteLine("Sala criada com sucesso");
                 return true;
@@ -155,7 +152,7 @@ static public class Connector
         try
         {
             Write($"ENTER_ROOM|{roomName}");
-            if (Read("SUCCESS"))
+            if (Read("ENTER_ROOM_SUCCESS"))
             {
                 Console.WriteLine("Conectado com sucesso");
                 return true;
