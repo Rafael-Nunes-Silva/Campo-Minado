@@ -2,26 +2,25 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 
 public static class Connector
 {
     static TcpClient tcpConn;
-    static List<KeyValuePair<string, string[]>> messageQueue = new List<KeyValuePair<string, string[]>>(0);
-    static Mutex messageQueueMut = new Mutex();
+    static Dictionary<string, string[]> messageQueue = new Dictionary<string, string[]>(0);
+    static Object messageQueueLock = new Object();
 
-    static Mutex rommsMut = new Mutex(),
-        playersMut = new Mutex(),
-        startGameMut = new Mutex();
-    public static string rooms, players;
+    static Object rommsLock = new Object(),
+        playersLock = new Object(),
+        startGameLock = new Object();
+    // public static string rooms, players;
     public static bool startGame = false;
 
     public static bool Connect(string ip, int port, string name)
     {
-        rooms = "Servidor não respondeu";
-        players = "Servidor não respondeu";
+        // rooms = "Servidor não respondeu";
+        // players = "Servidor não respondeu";
 
         try { tcpConn = new TcpClient(ip, port); }
         catch (Exception e)
@@ -34,24 +33,9 @@ public static class Connector
 
         Task.Run(Listen);
 
-        WaitForMsg("ROOMS", (rommsData) =>
-        {
-            rommsMut.WaitOne();
-            rooms = rommsData[0];
-            rommsMut.ReleaseMutex();
-        }, false);
-        WaitForMsg("PLAYERS", (playersData) =>
-        {
-            playersMut.WaitOne();
-            players = playersData[0];
-            playersMut.ReleaseMutex();
-        }, false);
-        WaitForMsg("STARTGAME", (start) =>
-        {
-            startGameMut.WaitOne();
-            startGame = true;
-            startGameMut.ReleaseMutex();
-        }, false);
+        // WaitForMsg("ROOMS", (rommsData) => { lock (rommsLock) { rooms = rommsData[0]; } }, false);
+        // WaitForMsg("PLAYERS", (playersData) => { lock (playersLock) { players = playersData[0]; } }, false);
+        WaitForMsg("STARTGAME", (start) => { lock (startGameLock) { startGame = true; } }, false);
 
         return true;
     }
@@ -107,43 +91,36 @@ public static class Connector
         }
     }
 
-    public static bool Read(string msgName)
+    public static bool Read(string msgName, int waitTime = 1000)
     {
-        if (messageQueueMut.WaitOne())
+        DateTime start = DateTime.Now;
+        while ((DateTime.Now - start).TotalMilliseconds <= waitTime)
         {
-            for (int i = 0; i < messageQueue.Count; i++)
+            lock (messageQueueLock)
             {
-                if (messageQueue[i].Key == msgName)
+                if (messageQueue.ContainsKey(msgName))
                 {
-                    messageQueue.RemoveAt(i);
+                    messageQueue.Remove(msgName);
                     return true;
                 }
             }
-            messageQueueMut.ReleaseMutex();
         }
         return false;
     }
 
-    public static bool Read(out string[] msg, string msgName)
+    public static bool Read(out string[] msg, string msgName, int waitTime = 1000)
     {
-        if (messageQueueMut.WaitOne())
+        DateTime start = DateTime.Now;
+        while ((DateTime.Now - start).TotalMilliseconds <= waitTime)
         {
-            for (int i = 0; i < messageQueue.Count; i++)
+            lock (messageQueueLock)
             {
-                try
+                if (messageQueue.ContainsKey(msgName))
                 {
-                    if (messageQueue[i].Key == msgName)
-                    {
-                        msg = new string[messageQueue[i].Value.Length];
-                        for (int j = 0; j < messageQueue[i].Value.Length; j++)
-                            msg[j] = messageQueue[i].Value[j];
-                        messageQueue.RemoveAt(i);
-                        return true;
-                    }
+                    msg = messageQueue[msgName];
+                    return true;
                 }
-                catch (Exception e) { break; }
             }
-            messageQueueMut.ReleaseMutex();
         }
         msg = new string[0];
         return false;
@@ -166,15 +143,13 @@ public static class Connector
             {
                 string[] msg = receivedMsg.Split('?');
 
-                if (messageQueueMut.WaitOne())
+                lock (messageQueueLock)
                 {
-                    if (msg.Length > 1)
-                        messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], msg[1].Split('&')));
-                    else messageQueue.Add(new KeyValuePair<string, string[]>(msg[0], new string[] { "" }));
-                    messageQueueMut.ReleaseMutex();
+                    if (messageQueue.ContainsKey(msg[0]))
+                        messageQueue[msg[0]] = (msg.Length > 1 ? msg[1].Split('&') : new string[] { "" });
+                    else messageQueue.Add(msg[0], (msg.Length > 1 ? msg[1].Split('&') : new string[] { "" }));
                 }
             }
-            Thread.Sleep(1000);
         }
     }
 
@@ -204,5 +179,21 @@ public static class Connector
         }
         Console.WriteLine("Falha ao entrar na sala");
         return false;
+    }
+
+    public static string GetRooms()
+    {
+        Write("GET_ROOMS");
+        if(Read(out string[] rooms, "ROMMS"))
+            return rooms[0];
+        return "O servidor não respondeu a tempo";
+    }
+
+    public static string GetPlayers()
+    {
+        Write("GET_PLAYERS");
+        if (Read(out string[] players, "PLAYERS"))
+            return players[0];
+        return "O servidor não respondeu a tempo";
     }
 }

@@ -106,7 +106,7 @@ class CampoMinado
         while (Connector.IsConnected())
         {
             Console.Clear();
-            Console.WriteLine(Connector.rooms); // Connector.GetRooms());
+            Console.WriteLine(Connector.GetRooms());
 
             Console.WriteLine("0 - Desconectar");
             Console.WriteLine("1 - Mostrar salas");
@@ -140,8 +140,7 @@ class CampoMinado
                             break;
                         }
 
-                        Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty());
-                        if (Connector.EnterRoom(roomName))
+                        if (Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty()) && Connector.EnterRoom(roomName))
                         {
                             WaitingRoom();
                             PlayGame(true);
@@ -169,10 +168,10 @@ class CampoMinado
 
     static void WaitingRoom()
     {
-        while (!Connector.startGame)
+        while (!Connector.startGame && Connector.IsConnected())
         {
             Console.Clear();
-            Console.WriteLine(Connector.players); // Connector.GetPlayers());
+            Console.WriteLine(Connector.GetPlayers());
 
             Console.WriteLine("0 - Sair da sala");
             Console.WriteLine("1 - Mostrar jogadores");
