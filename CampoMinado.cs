@@ -78,7 +78,7 @@ class CampoMinado
 
     static void Multiplayer()
     {
-        Console.Write("Insira o IP do servidor: ");
+        // Console.Write("Insira o IP do servidor: ");
         string ip = "127.0.0.1"; // Console.ReadLine();
 
         int port = 6778;/*
@@ -168,7 +168,7 @@ class CampoMinado
 
     static void WaitingRoom()
     {
-        while (!Connector.startGame && Connector.IsConnected())
+        while (Connector.IsConnected())
         {
             Console.Clear();
             Console.WriteLine(Connector.GetPlayers());

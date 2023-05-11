@@ -4,6 +4,7 @@ public class Table
 {
     public enum GameStatus
     {
+        NOT_PLAYING,
         PLAYING,
         WON,
         LOST
