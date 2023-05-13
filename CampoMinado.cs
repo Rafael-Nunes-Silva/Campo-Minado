@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 class CampoMinado
 {
@@ -12,6 +14,8 @@ class CampoMinado
                             "  \\_____\\__,_|_| |_| |_| .__/ \\___/  |_|  |_|_|_| |_|\\__,_|\\__,_|\\___/ \n" +
                             "                       | |                                             \n" +
                             "                       |_|                                             \n\n";
+
+    public static Thread waitRoomThread = new Thread(WaitingRoom);
 
     static void PrintTitle()
     {
@@ -115,51 +119,48 @@ class CampoMinado
             Console.WriteLine("3 - Conectar a sala");
             Console.Write(": ");
 
+            int input = -1;
+            string roomName = "";
             try
             {
-                int input = int.Parse(Console.ReadLine());
-                string roomName = "";
-
-                switch (input)
-                {
-                    case 0:
-                        Connector.Write("DISCONNECT");
-                        Connector.Disconnect();
-                        return;
-                    case 1:
-                        continue;
-                    case 2:
-                        Console.Write("Insira o nome da sala: ");
-                        roomName = Console.ReadLine();
-
-                        int maxPlayers = 2;
-                        Console.Write("Insira o número máximo de jogadores: ");
-                        try { maxPlayers = int.Parse(Console.ReadLine()); }
-                        catch (Exception e)
-                        {
-                            Console.WriteLine("Valor invalido");
-                            break;
-                        }
-
-                        if (Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty()) && Connector.EnterRoom(roomName))
-                        {
-                            WaitingRoom();
-                            // PlayGameMP();
-                        }
-                        break;
-                    case 3:
-                        Console.Write("Insira o nome da sala: ");
-                        if (Connector.EnterRoom(Console.ReadLine()))
-                        {
-                            WaitingRoom();
-                        }
-                        break;
-                }
+                input = int.Parse(Console.ReadLine());
+                roomName = "";
             }
-            catch (Exception e) 
+            catch (Exception e)
             {
                 Console.WriteLine(e);
-                continue; 
+                continue;
+            }
+
+            switch (input)
+            {
+                case 0:
+                    Connector.Write("DISCONNECT");
+                    Connector.Disconnect();
+                    return;
+                case 1:
+                    continue;
+                case 2:
+                    Console.Write("Insira o nome da sala: ");
+                    roomName = Console.ReadLine();
+
+                    int maxPlayers = 2;
+                    Console.Write("Insira o número máximo de jogadores: ");
+                    try { maxPlayers = int.Parse(Console.ReadLine()); }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine("Valor invalido");
+                        break;
+                    }
+
+                    if (Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty()) && Connector.EnterRoom(roomName))
+                        WaitingRoom();
+                    break;
+                case 3:
+                    Console.Write("Insira o nome da sala: ");
+                    if (Connector.EnterRoom(Console.ReadLine()))
+                        WaitingRoom();
+                    break;
             }
         }
 
@@ -170,21 +171,33 @@ class CampoMinado
     {
         while (Connector.IsConnected())
         {
-            if (Connector.Read("STARTGAME", out string[] content))
-                PlayGameMP((Table.Difficulty)int.Parse(content[0]), int.Parse(content[1]));
-
-            Console.Clear();
-            Console.WriteLine(Connector.GetPlayers());
-
-            Console.WriteLine("0 - Sair da sala");
-            Console.WriteLine("1 - Mostrar jogadores");
-            Console.WriteLine("2 - Estou pronto");
-            Console.WriteLine("3 - Não estou pronto");
-            Console.Write(": ");
-
-            try
+            lock (Connector.gamingLock)
             {
-                int input = int.Parse(Console.ReadLine());
+                Console.Clear();
+                Console.WriteLine(Connector.GetPlayers());
+
+                Console.WriteLine("0 - Sair da sala");
+                Console.WriteLine("1 - Mostrar jogadores");
+                Console.WriteLine("2 - Estou pronto");
+                Console.WriteLine("3 - Não estou pronto");
+                Console.Write(": ");
+
+                string sInput = "";
+                int input = -1;
+                try
+                {
+                    sInput = Console.ReadLine();
+                    input = int.Parse(sInput);
+                }
+                catch (Exception e)
+                {
+                    if (Connector.gaming)
+                        continue;
+
+                    Console.WriteLine(e);
+                    continue;
+                }
+
                 switch (input)
                 {
                     case 0:
@@ -194,55 +207,16 @@ class CampoMinado
                         continue;
                     case 2:
                         Connector.Write("READY", true.ToString());
+                        Thread.Sleep(1000);
                         break;
                     case 3:
                         Connector.Write("READY", false.ToString());
                         break;
                 }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                continue;
-            }
         }
     }
-    /*
-    static void PlayGame(bool multiplayer = false)
-    {
-        Table.Difficulty difficulty;
-        if (multiplayer)
-        {
-            Connector.Read("DIFFICULTY", out string[] msgArr);
-            difficulty = (Table.Difficulty)int.Parse(msgArr[0]);
-        }
-        else difficulty = InputHandler.GetDifficulty();
 
-        Table table = new Table(difficulty);
-        table.Draw();
-
-        Table.GameStatus gameStatus = GameLoop(table);
-
-        if (gameStatus == Table.GameStatus.WON)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Parabens! Você venceu!");
-        }
-        else if (gameStatus == Table.GameStatus.LOST)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Você perdeu :(");
-        }
-
-        if (multiplayer)
-            Connector.Write("GAMESTATUS", ((int)gameStatus).ToString());
-
-        Console.ResetColor();
-        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
-        Console.Write("Enter para continuar");
-        Console.ReadLine();
-    }
-    */
     static void PlayGameSP()
     {
         Table.Difficulty difficulty = InputHandler.GetDifficulty();
@@ -271,6 +245,8 @@ class CampoMinado
 
     public static void PlayGameMP(Table.Difficulty difficulty, int tableSeed)
     {
+        Connector.Write("GAMESTATUS", ((int)Table.GameStatus.PLAYING).ToString());
+
         Table table = new Table(difficulty, tableSeed);
         table.Draw();
 

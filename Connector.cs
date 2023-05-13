@@ -14,6 +14,7 @@ public static class Connector
     static Dictionary<string, string[]> messageQueue = new Dictionary<string, string[]>(0);
     static Object messageQueueLock = new Object();
 
+    public static Object gamingLock = new Object();
     public static bool gaming = false;
 
     public static bool Connect(string ip, int port, string name)
@@ -30,6 +31,18 @@ public static class Connector
             return false;
 
         Task.Run(Listen);
+
+        //*
+        WaitForMsg("STARTGAME", (content) =>
+        {
+            Console.WriteLine("O jogo começou, aperte 'ENTER' para começar");
+            lock (gamingLock)
+            {
+                Console.Clear();
+                CampoMinado.PlayGameMP((Table.Difficulty)int.Parse(content[0]), int.Parse(content[1]));
+            }
+        }, true);
+        //*/
 
         // WaitForMsg("STARTGAME", (content) => { gaming = true; }, true);
         // WaitForMsg("ENDGAME", (content) => { gaming = false; }, true);
