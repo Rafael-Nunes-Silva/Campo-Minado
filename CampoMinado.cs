@@ -1,7 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 class CampoMinado
 {
@@ -14,8 +15,6 @@ class CampoMinado
                             "  \\_____\\__,_|_| |_| |_| .__/ \\___/  |_|  |_|_|_| |_|\\__,_|\\__,_|\\___/ \n" +
                             "                       | |                                             \n" +
                             "                       |_|                                             \n\n";
-
-    public static Thread waitRoomThread = new Thread(WaitingRoom);
 
     static void PrintTitle()
     {
@@ -48,7 +47,6 @@ class CampoMinado
                 return;
             case 1:
                 PlayGameSP();
-                // Singleplayer();
                 break;
             case 2:
                 Multiplayer();
@@ -57,28 +55,6 @@ class CampoMinado
 
         Console.Write("Enter para continuar");
         Console.ReadLine();
-    }
-
-    static void Singleplayer()
-    {
-        Table table = new Table(InputHandler.GetDifficulty());
-        table.Draw();
-
-        Table.GameStatus gameStatus = GameLoop(table);
-
-        if (gameStatus == Table.GameStatus.WON)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Parabens! Você venceu!");
-        }
-        else if (gameStatus == Table.GameStatus.LOST)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Você perdeu :(");
-        }
-
-        Console.ResetColor();
-        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
     }
 
     static void Multiplayer()
