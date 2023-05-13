@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 
 class CampoMinado
 {
@@ -42,7 +43,7 @@ class CampoMinado
                 exit = true;
                 return;
             case 1:
-                PlayGame(false);
+                PlayGameSP();
                 // Singleplayer();
                 break;
             case 2:
@@ -143,7 +144,7 @@ class CampoMinado
                         if (Connector.CreateRoom(roomName, maxPlayers, InputHandler.GetDifficulty()) && Connector.EnterRoom(roomName))
                         {
                             WaitingRoom();
-                            PlayGame(true);
+                            // PlayGameMP();
                         }
                         break;
                     case 3:
@@ -151,7 +152,6 @@ class CampoMinado
                         if (Connector.EnterRoom(Console.ReadLine()))
                         {
                             WaitingRoom();
-                            PlayGame(true);
                         }
                         break;
                 }
@@ -170,6 +170,9 @@ class CampoMinado
     {
         while (Connector.IsConnected())
         {
+            if (Connector.Read("STARTGAME", out string[] content))
+                PlayGameMP((Table.Difficulty)int.Parse(content[0]), int.Parse(content[1]));
+
             Console.Clear();
             Console.WriteLine(Connector.GetPlayers());
 
@@ -204,13 +207,13 @@ class CampoMinado
             }
         }
     }
-
+    /*
     static void PlayGame(bool multiplayer = false)
     {
         Table.Difficulty difficulty;
         if (multiplayer)
         {
-            Connector.Read(out string[] msgArr, "DIFFICULTY");
+            Connector.Read("DIFFICULTY", out string[] msgArr);
             difficulty = (Table.Difficulty)int.Parse(msgArr[0]);
         }
         else difficulty = InputHandler.GetDifficulty();
@@ -232,10 +235,59 @@ class CampoMinado
         }
 
         if (multiplayer)
-        {
             Connector.Write("GAMESTATUS", ((int)gameStatus).ToString());
-            // Connector.Disconnect();
+
+        Console.ResetColor();
+        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
+    }
+    */
+    static void PlayGameSP()
+    {
+        Table.Difficulty difficulty = InputHandler.GetDifficulty();
+
+        Table table = new Table(difficulty);
+        table.Draw();
+
+        Table.GameStatus gameStatus = GameLoop(table);
+
+        if (gameStatus == Table.GameStatus.WON)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Parabens! Você venceu!");
         }
+        else if (gameStatus == Table.GameStatus.LOST)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Você perdeu :(");
+        }
+
+        Console.ResetColor();
+        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
+        Console.Write("Enter para continuar");
+        Console.ReadLine();
+    }
+
+    public static void PlayGameMP(Table.Difficulty difficulty, int tableSeed)
+    {
+        Table table = new Table(difficulty, tableSeed);
+        table.Draw();
+
+        Table.GameStatus gameStatus = GameLoop(table);
+
+        if (gameStatus == Table.GameStatus.WON)
+        {
+            Console.ForegroundColor = ConsoleColor.Green;
+            Console.WriteLine("Parabens! Você venceu!");
+        }
+        else if (gameStatus == Table.GameStatus.LOST)
+        {
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("Você perdeu :(");
+        }
+
+        Connector.Write("GAMESTATUS", ((int)gameStatus).ToString());
 
         Console.ResetColor();
         Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");

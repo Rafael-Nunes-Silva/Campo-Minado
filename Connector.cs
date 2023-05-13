@@ -14,6 +14,8 @@ public static class Connector
     static Dictionary<string, string[]> messageQueue = new Dictionary<string, string[]>(0);
     static Object messageQueueLock = new Object();
 
+    public static bool gaming = false;
+
     public static bool Connect(string ip, int port, string name)
     {
         Connector.name = name;
@@ -29,6 +31,9 @@ public static class Connector
 
         Task.Run(Listen);
 
+        // WaitForMsg("STARTGAME", (content) => { gaming = true; }, true);
+        // WaitForMsg("ENDGAME", (content) => { gaming = false; }, true);
+
         return true;
     }
 
@@ -42,16 +47,16 @@ public static class Connector
         return tcpConn.Connected;
     }
 
-    public static void WaitForMsg(string msg, Action<string[]> receiveCallback, bool once = true)
+    public static void WaitForMsg(string msgName, Action<string[]> receiveCallback, bool repeat = false)
     {
         Task.Run(() =>
         {
             while (tcpConn.Connected)
             {
-                if (Read(out string[] strArr, msg))
+                if (Read(msgName, out string[] strArr))
                 {
                     receiveCallback(strArr);
-                    if (once)
+                    if (!repeat)
                         return;
                 }
             }
@@ -63,12 +68,12 @@ public static class Connector
         string msg = "";
         if (msgParts.Length > 1)
         {
-            msg = $"|{name}?{msgParts[0]}?";
+            msg = $"|{msgParts[0]}?";
             for (int i = 1; i < msgParts.Length; i++)
                 msg += $"{msgParts[i]}{(i < msgParts.Length - 1 ? "&" : "")}";
             msg += "|";
         }
-        else msg = $"|{name}?{msgParts[0]}|";
+        else msg = $"|{msgParts[0]}|";
 
         try
         {
@@ -83,30 +88,41 @@ public static class Connector
         }
     }
 
-    public static bool Read(string msgName)
+    public static bool Read(string msgName, int maxWaitTime = 10000)
     {
-        lock (messageQueueLock)
+        DateTime start = DateTime.Now;
+        do
         {
-            if (messageQueue.ContainsKey(msgName))
+            lock (messageQueueLock)
             {
-                messageQueue.Remove(msgName);
-                return true;
+                if (messageQueue.ContainsKey(msgName))
+                {
+                    messageQueue.Remove(msgName);
+                    return true;
+                }
             }
-        }
+            Thread.Sleep(100);
+        } while ((DateTime.Now - start).TotalMilliseconds < maxWaitTime);
         return false;
     }
 
-    public static bool Read(out string[] msg, string msgName)
+    public static bool Read(string msgName, out string[] content, int maxWaitTime = 10000)
     {
-        lock (messageQueueLock)
+        DateTime start = DateTime.Now;
+        do
         {
-            if (messageQueue.ContainsKey(msgName))
+            lock (messageQueueLock)
             {
-                msg = messageQueue[msgName];
-                return true;
+                if (messageQueue.ContainsKey(msgName))
+                {
+                    content = messageQueue[msgName];
+                    messageQueue.Remove(msgName);
+                    return true;
+                }
             }
-        }
-        msg = new string[0];
+            Thread.Sleep(100);
+        } while ((DateTime.Now - start).TotalMilliseconds < maxWaitTime);
+        content = new string[0];
         return false;
     }
 
@@ -135,15 +151,13 @@ public static class Connector
                 }
             }
 
-            Thread.Sleep(1000);
+            Thread.Sleep(100);
         }
     }
 
-    public static bool CreateRoom(string roomName, int maxPlayers, Table.Difficulty difficulty, int waitTime = 1000)
+    public static bool CreateRoom(string roomName, int maxPlayers, Table.Difficulty difficulty)
     {
         Write("CREATE_ROOM", roomName, maxPlayers.ToString(), ((int)difficulty).ToString());
-
-        Thread.Sleep(waitTime);
 
         if (Read("CREATE_ROOM_SUCCESS"))
         {
@@ -154,12 +168,10 @@ public static class Connector
         return false;
     }
 
-    public static bool EnterRoom(string roomName, int waitTime = 1000)
+    public static bool EnterRoom(string roomName)
     {
         try { Write("ENTER_ROOM", roomName); }
         catch (Exception e) { Console.WriteLine(e); }
-
-        Thread.Sleep(waitTime);
 
         if (Read("ENTER_ROOM_SUCCESS"))
         {
@@ -170,20 +182,20 @@ public static class Connector
         return false;
     }
 
-    public static string GetRooms(int waitTime = 1000)
+    public static string GetRooms()
     {
         Write("GET_ROOMS");
-        Thread.Sleep(waitTime);
-        if (Read(out string[] rooms, "ROOMS"))
+
+        if (Read("ROOMS", out string[] rooms))
             return rooms[0];
         return "O servidor não respondeu a tempo";
     }
 
-    public static string GetPlayers(int waitTime = 1000)
+    public static string GetPlayers()
     {
         Write("GET_PLAYERS");
-        Thread.Sleep(waitTime);
-        if (Read(out string[] players, "PLAYERS"))
+
+        if (Read("PLAYERS", out string[] players))
             return players[0];
         return "O servidor não respondeu a tempo";
     }
