@@ -239,7 +239,7 @@ class CampoMinado
             Console.WriteLine("Você perdeu :(");
         }
 
-        Connector.Write("GAMESTATUS", ((int)gameStatus).ToString());
+        Connector.Write("GAMESTATUS", ((int)gameStatus).ToString(), $"Durou {table.elapsedTime} segundos e usou {table.flags} bandeiras de {table.maxFlags}");
 
         Console.ResetColor();
         Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
