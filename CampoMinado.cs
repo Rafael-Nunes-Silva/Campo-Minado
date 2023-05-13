@@ -59,10 +59,10 @@ class CampoMinado
 
     static void Multiplayer()
     {
-        // Console.Write("Insira o IP do servidor: ");
-        string ip = "127.0.0.1"; // Console.ReadLine();
+        Console.Write("Insira o IP do servidor: ");
+        string ip = Console.ReadLine();
 
-        int port = 6778;/*
+        int port = 6778;
         Console.Write("Insira a porta do servidor: ");
         try { port = int.Parse(Console.ReadLine()); }
         catch (Exception e)
@@ -70,7 +70,6 @@ class CampoMinado
             Console.WriteLine("Valor invalido");
             Multiplayer();
         }
-        */
 
         Console.Write("Insira como quer ser chamado: ");
         string name = Console.ReadLine();
@@ -167,10 +166,7 @@ class CampoMinado
                 }
                 catch (Exception e)
                 {
-                    if (Connector.gaming)
-                        continue;
-
-                    Console.WriteLine(e);
+                    // Console.WriteLine(e);
                     continue;
                 }
 

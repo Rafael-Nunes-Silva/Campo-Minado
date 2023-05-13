@@ -166,9 +166,9 @@ public class Table
 
     public void PutFlags(InputHandler.InputCell[] pos)
     {
-        for (int i = 0; i < pos.Length && flags < maxFlags; i++)
+        for (int i = 0; i < pos.Length; i++)
         {
-            if (!cells[pos[i].line][pos[i].column].flag)
+            if (!cells[pos[i].line][pos[i].column].flag && flags < maxFlags)
             {
                 cells[pos[i].line][pos[i].column].flag = true;
                 flags++;

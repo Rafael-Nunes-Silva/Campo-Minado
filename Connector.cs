@@ -13,9 +13,7 @@ public static class Connector
     static TcpClient tcpConn;
     static Dictionary<string, string[]> messageQueue = new Dictionary<string, string[]>(0);
     static Object messageQueueLock = new Object();
-
     public static Object gamingLock = new Object();
-    public static bool gaming = false;
 
     public static bool Connect(string ip, int port, string name)
     {
@@ -32,7 +30,6 @@ public static class Connector
 
         Task.Run(Listen);
 
-        //*
         WaitForMsg("STARTGAME", (content) =>
         {
             Console.WriteLine("O jogo começou, aperte 'ENTER' para começar");
@@ -42,10 +39,6 @@ public static class Connector
                 CampoMinado.PlayGameMP((Table.Difficulty)int.Parse(content[0]), int.Parse(content[1]));
             }
         }, true);
-        //*/
-
-        // WaitForMsg("STARTGAME", (content) => { gaming = true; }, true);
-        // WaitForMsg("ENDGAME", (content) => { gaming = false; }, true);
 
         return true;
     }
@@ -148,7 +141,7 @@ public static class Connector
             try { size = tcpConn.GetStream().Read(buffer, 0, buffer.Length); }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                // Console.WriteLine(e);
                 break;
             }
 
