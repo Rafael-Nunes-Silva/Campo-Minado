@@ -89,7 +89,8 @@ public static class Connector
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Console.WriteLine("Falha ao se comunicar com o servidor");
+            // Console.WriteLine(e);
             return false;
         }
     }
@@ -141,6 +142,7 @@ public static class Connector
             try { size = tcpConn.GetStream().Read(buffer, 0, buffer.Length); }
             catch (Exception e)
             {
+                Console.WriteLine("Falha ao se comunicar com o servidor");
                 // Console.WriteLine(e);
                 break;
             }
@@ -177,7 +179,11 @@ public static class Connector
     public static bool EnterRoom(string roomName)
     {
         try { Write("ENTER_ROOM", roomName); }
-        catch (Exception e) { Console.WriteLine(e); }
+        catch (Exception e)
+        {
+            Console.WriteLine("Falha ao se comunicar com o servidor");
+            //Console.WriteLine(e);
+        }
 
         if (Read("ENTER_ROOM_SUCCESS"))
         {

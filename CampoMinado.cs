@@ -7,7 +7,7 @@ using System.Threading;
 class CampoMinado
 {
     static bool exit = false;
-    const string title =    "   _____                              __  __ _                 _       \n" +
+    const string title = "   _____                              __  __ _                 _       \n" +
                             "  / ____|                            |  \\/  (_)               | |      \n" +
                             " | |     __ _ _ __ ___  _ __   ___   | \\  / |_ _ __   __ _  __| | ___  \n" +
                             " | |    / _` | '_ ` _ \\| '_ \\ / _ \\  | |\\/| | | '_ \\ / _` |/ _` |/ _ \\ \n" +
@@ -103,6 +103,7 @@ class CampoMinado
             }
             catch (Exception e)
             {
+                Console.WriteLine("Valor invalido");
                 Console.WriteLine(e);
                 continue;
             }
@@ -166,7 +167,7 @@ class CampoMinado
                 }
                 catch (Exception e)
                 {
-                    // Console.WriteLine(e);
+                    Console.WriteLine("Valor invalido");
                     continue;
                 }
 

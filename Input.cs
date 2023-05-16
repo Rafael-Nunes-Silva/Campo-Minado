@@ -84,11 +84,11 @@ static public class InputHandler
         for (int i = 0; i < playMatches.Count; i++)
         {
             int column = letterIndexMap[playMatches[i].ToString()[0]],
-                line = Convert.ToInt32(playMatches[i].ToString().Substring(1))-1;
+                line = Convert.ToInt32(playMatches[i].ToString().Substring(1)) - 1;
 
-            if (column < 0 || column > table.numOfColumns-1)
+            if (column < 0 || column > table.numOfColumns - 1)
                 continue;
-            if (line < 0 || line > table.numOfLines-1)
+            if (line < 0 || line > table.numOfLines - 1)
                 continue;
 
             gameInputs.Add(new InputCell(column, line));
@@ -100,7 +100,7 @@ static public class InputHandler
     {
         Regex lineRegex = new Regex("^[0-9]?[0-9]");
 
-        int line = Convert.ToInt32(lineRegex.Match(input).ToString())-1;
+        int line = Convert.ToInt32(lineRegex.Match(input).ToString()) - 1;
 
         if (line < 0 || line > table.numOfLines - 1)
             return -1;
@@ -112,7 +112,7 @@ static public class InputHandler
     {
         Console.ResetColor();
         Console.Write("Insira seu comando: ");
-        
+
         input = Console.ReadLine().ToUpper();
 
         Regex playRegex = new Regex("[A-Z][0-9]?[0-9]"),
