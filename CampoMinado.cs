@@ -211,8 +211,6 @@ class CampoMinado
 
         Console.ResetColor();
         Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
-        Console.Write("Enter para continuar");
-        Console.ReadLine();
     }
 
     public static void PlayGameMP(Table.Difficulty difficulty, int tableSeed)
@@ -271,30 +269,6 @@ class CampoMinado
         Console.Clear();
         PrintTitle();
         MainMenu();
-
-        /*
-        Table table = new Table(InputHandler.GetDifficulty());
-        table.Draw();
-
-        Table.GameStatus gameStatus = GameLoop(table);
-
-        if (gameStatus == Table.GameStatus.WON)
-        {
-            Console.ForegroundColor = ConsoleColor.Green;
-            Console.WriteLine("Parabens! Você venceu!");
-        }
-        else if (gameStatus == Table.GameStatus.LOST)
-        {
-            Console.ForegroundColor = ConsoleColor.Red;
-            Console.WriteLine("Você perdeu :(");
-        }
-
-        Console.ResetColor();
-        Console.WriteLine($"O jogo durou {table.elapsedTime} segundos e você usou {table.flags} bandeiras de {table.maxFlags}");
-        Console.Write("Quer tentar de novo?(Y/n): ");
-        if (Console.ReadLine().ToUpper() == "Y")
-            Main(args);
-        */
 
         if (!exit)
             Main(args);

@@ -85,7 +85,7 @@ public class Table
         Console.CursorVisible = false;
 
         elapsedTime = (int)(DateTime.Now - startTime).TotalSeconds;
-        Console.WriteLine($"Bandeiras: {maxFlags - flags} | Tempo: {(elapsedTime < 0 ? 0 : elapsedTime)}s");
+        Console.WriteLine($"   Bandeiras: {maxFlags - flags} | Tempo: {(elapsedTime < 0 ? 0 : elapsedTime)}s");
         Console.WriteLine($"  |{"A|B|C|D|E|F|G|H|I|J|K|L|M|N|O|P|Q|R|S|T|U|V|W|X|Y|Z|".Substring(0, numOfColumns * 2)}");
 
         for (int i = 0; i < numOfLines; i++)
