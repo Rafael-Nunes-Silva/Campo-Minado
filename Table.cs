@@ -200,9 +200,12 @@ public class Table
                     maxFlags++;
             }
         }
-        maxFlags--;
 
-        cells[startPos.line][startPos.column].bomb = false;
+        if (cells[startPos.line][startPos.column].bomb)
+        {
+            maxFlags--;
+            cells[startPos.line][startPos.column].bomb = false;
+        }
 
         OpenArea(startPos.line, startPos.column, (difficulty == Difficulty.EASY ? true : false));
 
