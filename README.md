@@ -2,7 +2,7 @@
 
 Jogo baseado no Minesweeper feito em C#
 
-<img width="400px" height="400px" src="https://user-images.githubusercontent.com/76886825/230950101-2ade9ee5-b0ed-41fa-b3de-7238ae8e4d3c.png">
+<img width="400px" height="400px" src="https://github.com/Rafael-Nunes-Silva/Campo-Minado/assets/76886825/b630a6cb-91e2-421a-8fcd-dde80a62fde3">
 
 
 
@@ -22,4 +22,4 @@ Multiplas células podem ser inseridas de uma só vez, basta separa-las por um e
 # Multiplayer
 O Campo-Minado conta com um modo multiplayer em que os jogadores podem criar salas para se reunirem e se desafiarem.
 
-Para jogar o multiplayer do Campo-Minado, será necessário um servidor. Para aprender como rodar o servidor, dê uma olhada no repositório <a src="https://github.com/Rafael-Nunes-Silva/Campo-Minado-Server">Campo-Minado-Server</a>.
+Para jogar o multiplayer do Campo-Minado, será necessário um servidor. Para aprender como rodar o servidor, dê uma olhada no repositório <a href="https://github.com/Rafael-Nunes-Silva/Campo-Minado-Server">Campo-Minado-Server</a>.
